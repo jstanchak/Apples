@@ -1,0 +1,13 @@
+<h1>Add a Song</h1>
+
+<form action="" method="post">
+	{% csrf_token %}
+	{{ form.as_table }}
+	
+<br />
+<input type="submit" value="Add Song" />
+</form>
+
+
+<a href="/playlists/add/list/">Add a new playlist</a>
+<a href="/playlists/add/song/">Add a new song</a>
