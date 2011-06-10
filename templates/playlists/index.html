@@ -1,0 +1,13 @@
+<h1>Welcome to the Playlist Index page</h1>
+
+{% if latest_playlists %}
+	<h2>Latest Playlists</h2>
+	<ul>
+	{% for plist in latest_playlists %}
+		<li><a href="/playlists/{{ playlist.id }}/">{{plist.plname }}</a></li>
+	{% endfor %}
+	</ul>
+{% else %}
+	<h2>No playlists have been created yet!  Make one!</h2>
+{% endif %}
+	
