@@ -11,8 +11,6 @@ class Playlist(models.Model):
 		return u'%s' % (self.pl_name)
 	
 
-
-
 class PlaylistForm(ModelForm):
 	class Meta:
 		model = Playlist
