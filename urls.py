@@ -3,6 +3,7 @@ from django.conf.urls.defaults import *
 
 urlpatterns = patterns('',
     (r'^playlists/', include('playlists.urls')),
+	(r'^map/', include('map.urls')),
     (r'^$', 'apples.views.home'),
     
 
