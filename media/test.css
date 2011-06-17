@@ -1,7 +1,10 @@
 body
-	{background-color:orange}
+	{background-color:red}
 
 p
 	{text-align:center;
 	color:blue;
 	}
+	
+li
+	{background-color:blue;}
