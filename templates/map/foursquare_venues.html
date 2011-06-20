@@ -17,31 +17,51 @@
 	var map;
 	var myLatlng = new google.maps.LatLng(39.942245, -75.15716040000001);
 	var marker; 
+	var browserSupportFlag = new Boolean();
+	var initialLocation;
 	
-	function setMarker(latlng) {	
+	function setMarker(latlng) {
+		if (marker) {
+			marker.setMap(null);
+		};	
 		marker = new google.maps.Marker( {
 			map: map,
 			position: latlng,
 			draggable: true
 		});
-		
 		google.maps.event.addListener(marker, 'dragend', function(event) {
 		    moveMarker(event.latLng);
 		});
 	}
+		
 	
 	function initialize () {
 		geocoder = new google.maps.Geocoder();
 		var myOptions = {
 			zoom: 14,
-			center: myLatlng,
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		};
 		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-		setMarker(myLatlng);
-		document.getElementById('ll_map').innerHTML = myLatlng;
-		var lat = map.getCenter().toString()
-		foursquare(myLatlng, lat)
+		
+		if (navigator.geolocation) {
+			browserSupportFlag = true;
+			navigator.geolocation.getCurrentPosition(function(position) {
+				initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+				map.setCenter(initialLocation);
+				setMarker(initialLocation);
+				var lat = map.getCenter().toString();
+				document.getElementById('ll_map').innerHTML = lat;
+				foursquare(initialLocation, lat);
+			}, function() {
+				alert("Geolocation not supported.  We've stuck you on the Empire State Building.")
+				initialLocation = new google.maps.LatLng(40.748379, -73.98555999999996)
+				map.setCenter(initialLocation);
+				setMarker(initialLocation);
+				var lat = map.getCenter().toString();
+				document.getElementById('ll_map').innerHTML = lat;
+				foursquare(initialLocation, lat);
+			});
+		};
 	}
 	
 	function moveMarker(latlng) {
@@ -83,16 +103,29 @@
 
 		$.getJSON('https://api.foursquare.com/v2/venues/search?', {"oauth_token": "VRRXHCCBZAKR0XXBB11BZJSA1K2TVBM5FIAEXWDRFKGJT44I",
         "ll": l_string, 
-		"limit": 10}, 
+		"limit": 20}, 
 			function(data) {
 				document.getElementById('fsq_results1').innerHTML = '';
+				$("#fsq_results1").append('<h3>Venues with People</h3>');
 				$.each(data.response.groups, function() {
-					$("#fsq_results1").append('<h3>'+this.name+'</h3>');
 					$.each(this.items, function(){
-						$("#fsq_results1").append('<h5>'+this.name+'</h5><p>'+this.hereNow.count+' people here: </p>');
-						hereNow(this.id);
-						var elName = 'fsq_'+this.id
-						$("<p>").attr("id",elName).appendTo("#fsq_results1");
+						if (this.hereNow.count > 0) {
+							$("#fsq_results1").append('<h5>'+this.name+'</h5><p>'+this.hereNow.count+' people here: </p>');
+							hereNow(this.id);
+							var elName = 'fsq_'+this.id
+							$("<p>").attr("id",elName).appendTo("#fsq_results1");				
+						};
+					});
+				});
+				$("#fsq_results1").append('<h3>Venues withOUT People</h3>');
+				$.each(data.response.groups, function() {
+					$.each(this.items, function(){
+						if (this.hereNow.count == 0) {
+							$("#fsq_results1").append('<h5>'+this.name+'</h5>');
+							hereNow(this.id);
+							var elName = 'fsq_'+this.id;
+							$("<p>").attr("id",elName).appendTo("#fsq_results1");				
+						};
 					});
 				});
 			});
@@ -145,8 +178,6 @@
 				</div><!--end col_w300 col_first-->
 				<div class='col_w640 col_last'>
 					<h2 id='nerds'>Foursquare Results</h2>
-					<p align='justify'>Once you enter an address, you can find out who is checked in where around the location.</p>
-					<p align='justify'>Here is another paragraph that talks about some important stuff that you might want to know.</p>
 					<div id='fsq_results1'></div>
 				</div><!--end col_w640 col_last-->
 				<div class="cleaner"></div>
