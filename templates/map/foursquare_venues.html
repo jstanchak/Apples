@@ -101,6 +101,10 @@
 	function updateAddress() {
 		codeAddress();
 	}
+	
+	function ClearForm() {
+		document.getElementById('address').value="";
+	}
 </script>
 </head>
 <body onload="initialize()">
@@ -108,39 +112,41 @@
 	<div id='wrapper'>
 		<div id='header'>
 			<div id='site_title'>
-				<a href="jennykiosk.com">Jenny's Idea Room</a>
+				<a href=""> by Jenny Stanchak </a>
 			</div><!--end of site_title-->
 			<div id='menu'>
 				<ul>
-					<li><a href="index.html" class="current">Home</a></li>
-                    <li><a href="aboutus.html">About Us</a></li>
-                    <li><a href="services.html">Services</a></li>
-                    <li><a href="gallery.html">Gallery</a></li>
-                    <li><a href="contactus.html">Contact Us</a></li>
+					<li><a href="" class="current">These</a></li>
+                    <li><a href="">Light</a></li>
+                    <li><a href="">Bulbs</a></li>
+                    <li><a href="">Do</a></li>
+                    <li><a href="">Nothing</a></li>
                 </ul>    	
             </div> <!-- end of menu -->
-			<div class="cleanter"></div>
+			<div id="header_right">
+				<p align='justify'><em>Enter your address below to see magic happen below.</em></p>
+				<div name='testform'>
+					<input id="address" type='text' size=85 name='address' value='Please enter in your address' onfocus='ClearForm();'/>
+					<input type='submit' value='Update Address' onclick="updateAddress()" />
+				</div><br />
+			</div>
+			<div class="cleaner"></div>
 		</div><!--end of header-->
-		<div id='main'>
-			<div id='featured_box'>
-				<div id="map_canvas"></div>
-			</div><!--end of featured_box-->
+		<div id='main'>		
 		</div><!--end of main-->
 		<div id='content'>
 			<div class='content_box cb_last'>
 				<div class='col_w300 col_first'>
-					<h2>Enter in an address</h2>
-					<p align='justify'><em>Enter your address below to see magic happen in the map above.</em></p>
-					<div>
-						<input id="address" type='text' size=52 name='address' value='Please enter in your address'/>
-						<input type='submit' value='Update Address' onclick="updateAddress()" />
-					</div><br />
-					<p align='justify'><strong>The map is currently centered at: <span id='ll_map'></span>.</strong></p>
-					<p align='justify'>Once you enter an address, you can find out who is checked in where around the location.</p>
-					<p align='justify'>Here is another paragraph that talks about some important stuff that you might want to know.</p>
+					<h2>The Magic Map</h2>	
+					<p align='justify'><strong>Your selected location is: <span id='ll_map'></span>.</strong></p>
+					<div id='featured_box'>
+						<div id="map_canvas"></div>
+					</div><!--end of featured_box-->
 				</div><!--end col_w300 col_first-->
 				<div class='col_w640 col_last'>
 					<h2 id='nerds'>Foursquare Results</h2>
+					<p align='justify'>Once you enter an address, you can find out who is checked in where around the location.</p>
+					<p align='justify'>Here is another paragraph that talks about some important stuff that you might want to know.</p>
 					<div id='fsq_results1'></div>
 				</div><!--end col_w640 col_last-->
 				<div class="cleaner"></div>
