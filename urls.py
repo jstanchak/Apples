@@ -7,7 +7,7 @@ urlpatterns = patterns('',
 	(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root':settings.MEDIA_ROOT}),
     (r'^playlists/', include('playlists.urls')),
 	(r'^map/', include('map.urls')),
-    (r'^$', 'apples.views.home'),
+    (r'^$', 'apples.map.views.fsq_places'),
     
 
     # (r'^apples/', include('apples.foo.urls')),
