@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <head>
 	<title>G-Squared Map</title>
-	<link rel="stylesheet" type="text/css" href="/media/map/style.css" />
+	<style type="text/css">
+	body {background-color:orange}
+	</style>
+	<link rel="stylesheet" type="text/css" href="/media/map/templatemo_style.css" />
 	<!-->
 	<link href="apples/media/map/templatemo_style.css" rel="stylesheet" type="text/css" />
 	<!-->
@@ -18,7 +21,6 @@
 	var browserSupportFlag = new Boolean();
 	var initialLocation;
 	var fsq_image = '/media/map/images/foursquare.png';
-	var infowindow;
 
 	
 	function deletePMarkers() {
@@ -48,7 +50,7 @@
 	function initialize () {
 		geocoder = new google.maps.Geocoder();
 		var myOptions = {
-			zoom: 16,
+			zoom: 14,
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		};
 		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
@@ -61,6 +63,7 @@
 				map.setCenter(initialLocation);
 				setMarker(initialLocation);
 				var lat = map.getCenter().toString();
+				document.getElementById('ll_map').innerHTML = lat;
 				foursquare(initialLocation, lat);
 			}, function() {
 				alert("Geolocation not supported.  We've stuck you on the Empire State Building.")
@@ -68,6 +71,7 @@
 				map.setCenter(initialLocation);
 				setMarker(initialLocation);
 				var lat = map.getCenter().toString();
+				document.getElementById('ll_map').innerHTML = lat;
 				foursquare(initialLocation, lat);
 			});
 		};
@@ -76,6 +80,7 @@
 	function moveMarker(latlng) {
 		deletePMarkers();
 		map.setCenter(latlng);
+		document.getElementById('ll_map').innerHTML = latlng;
 		var lat = map.getCenter().toString();
 		foursquare(myLatlng, lat);
 	}
@@ -86,7 +91,7 @@
       if (status == google.maps.GeocoderStatus.OK) {
         map.setCenter(results[0].geometry.location);
         setMarker(results[0].geometry.location);
-		deletePMarkers();
+		document.getElementById('ll_map').innerHTML = (results[0].geometry.location);
 		var lat = map.getCenter().toString();
 		foursquare(myLatlng, lat);
       } else {
@@ -100,40 +105,24 @@
 			function(data) {
 				var elName = 'fsq_'+venue_id;
 				document.getElementById(elName).innerHTML = '';
-				var userPhotos = [];
 				$.each(data.response.hereNow.items, function() {
 					$('#'+elName).append('<img src='+this.user.photo+' />');
-					userPhotos.push(this.user.photo);
+					addVMarker(this.user.photo, venueName, latlng, count);
 				});
-				addVMarker(userPhotos, venueName, latlng, count);
 			});
 	}	
 	
-	function addVMarker(images, venueName, latlng, count) {
+	function addVMarker(image, venueName, latlng, count) {
 		tString = venueName+' - '+count+' people here';
-		var contentStr = '<div class="box_title"><b>'+venueName+'</b></div><br /><div class="box_content">';
-		for (i in images) {
-			contentStr += '<img src='+images[i]+' width="110" height="110"/>';
-		};
-		contentStr += '</div>';
 		vMarker = new google.maps.Marker({
 			position: latlng,
 			map: map,
 			draggable: false,
-			icon: fsq_image,
+			icon: image,
 			title: tString,
-			html: contentStr,
 		});
-		markersArray.push(vMarker);
-		infowindow = new google.maps.InfoWindow({
-			maxWidth: 330,
-		});
-		google.maps.event.addListener(vMarker, 'mouseover', function() {
-			infowindow.setContent(this.html);
-			infowindow.open(map, this);
-		});
+		markersArray.push(pMarker);
 	}
-	
 	
 	function foursquare(latlng, lat) {
 		var lstring = lat.replace('(','');
@@ -179,28 +168,55 @@
 </script>
 </head>
 <body onload="initialize()">
-<div id="header"> 
-	<div class="outsideContainer"> 
-		<ul id="topNav"> 
-			<li><div id='searchbox'>
+<div id='outer_wrapper'>
+	<div id='wrapper'>
+		<div id='header'>
+			<div id='site_title'>
+				<a href=""> by Jenny Stanchak </a>
+			</div><!--end of site_title-->
+			<div id='menu'>
+				<ul>
+					<li><a href="" class="current">These</a></li>
+                    <li><a href="">Light</a></li>
+                    <li><a href="">Bulbs</a></li>
+                    <li><a href="">Do</a></li>
+                    <li><a href="">Nothing</a></li>
+                </ul>    	
+            </div> <!-- end of menu -->
+			<div id="header_right">
+				<p align='justify'><em>Enter your address below to see magic happen below.</em></p>
 				<div name='testform'>
-					<input id="address" type='text' size=65 name='address' value='Please enter in your address' onfocus='ClearForm();'/>
+					<input id="address" type='text' size=85 name='address' value='Please enter in your address' onfocus='ClearForm();'/>
 					<input type='submit' value='Update Address' onclick="updateAddress()" />
-				</div>
-			</div><!--end of searchbox--></li>
-	    </ul> 
-	    <a href="http://www.jennystanchak.com/" id="logo"><img src="/media/map/images/map_logo.png" /></a> 
-	</div> 
-</div>
-<div style="height: 5px !important;" id="nav"> 
-  <div class="outsideContainer"> 
-  </div> 
-</div>
-<div id='map_body'>
-	<div id="map_canvas"></div>
-</div><!--end of map_body-->   
-<div class='results'>
-	<h2 id='nerds'>Foursquare Results</h2>
-	<div id='fsq_results1'></div>
-</div><!--results-->	     
+				</div><br />
+			</div>
+			<div class="cleaner"></div>
+		</div><!--end of header-->
+		<div id='main'>		
+		</div><!--end of main-->
+		<div id='content'>
+			<div class='content_box cb_last'>
+				<div class='col_w300 col_first'>
+					<h2>The Magic Map</h2>	
+					<p align='justify'><strong>Your selected location is: <span id='ll_map'></span>.</strong></p>
+					<div id='featured_box'>
+						<div id="map_canvas"></div>
+					</div><!--end of featured_box-->
+				</div><!--end col_w300 col_first-->
+				<div class='col_w640 col_last'>
+					<h2 id='nerds'>Foursquare Results</h2>
+					<div id='fsq_results1'></div>
+				</div><!--end col_w640 col_last-->
+				<div class="cleaner"></div>
+			</div><!--end of content_box cb_last-->
+		</div><!--end of content-->
+		<div id='footer'>
+			<a href=# class="current">Home</a> | <a href=#>About Us</a> | <a href=#>Services</a> | <a href=#>Gallery</a> | <a href=#>Contact Us</a><br /><br />
+    
+        	Copyright © 2011 <a href="#">Jenny Stanchak</a> | <a href="http://www.iwebsitetemplate.com" target="_parent">Website Templates</a> by <a href="http://www.templatemo.com" target="_parent">Free CSS Templates</a>
+            
+	    </div><!--end of footer-->
+
+	</div><!--end of wrapper-->
+</div><!--end of outer wrapper-->
 </body>
