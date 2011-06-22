@@ -61,14 +61,14 @@
 				map.setCenter(initialLocation);
 				setMarker(initialLocation);
 				var lat = map.getCenter().toString();
-				foursquare(initialLocation, lat);
+				foursquareHandler(lat);
 			}, function() {
 				alert("Geolocation not supported.  We've stuck you on the Empire State Building.")
 				initialLocation = new google.maps.LatLng(40.748379, -73.98555999999996)
 				map.setCenter(initialLocation);
 				setMarker(initialLocation);
 				var lat = map.getCenter().toString();
-				foursquare(initialLocation, lat);
+				foursquareHandler(lat);
 			});
 		};
 	}
@@ -77,7 +77,7 @@
 		deletePMarkers();
 		map.setCenter(latlng);
 		var lat = map.getCenter().toString();
-		foursquare(myLatlng, lat);
+		foursquareHandler(lat);
 	}
 	
   function codeAddress() {
@@ -137,6 +137,25 @@
 		});
 	}
 	
+	function foursquareHandler(lat) {
+		foursquare(myLatlng, lat);
+		var myLL = lat.toString();
+		var myLL1 = myLL.replace('(','');
+		var myLL2 = myLL1.replace(')','');
+		var myLL3 = myLL2.replace(' ','');
+		var coords = myLL3.split(',');
+		var baseLat = parseFloat(coords[0]);
+		var baseLng = parseFloat(coords[1]);
+		var lats = [baseLat, baseLat + .005, baseLat - .005];
+		var lngs = [baseLng, baseLng + .005, baseLng - .005];
+		for (i in lats) {
+			for (j in lngs) {
+				var myLatlng = new google.maps.LatLng(lats[i], lngs[j]);
+				foursquare(myLatlng,myLatlng);
+			}
+		};
+		
+	}
 	
 	function foursquare(latlng, lat) {
 		var lstring = lat.replace('(','');
@@ -144,7 +163,7 @@
 
 		$.getJSON('https://api.foursquare.com/v2/venues/search?', {"oauth_token": "VRRXHCCBZAKR0XXBB11BZJSA1K2TVBM5FIAEXWDRFKGJT44I",
         "ll": l_string, 
-		"limit": 20}, 
+		"limit": 50}, 
 			function(data) {
 				document.getElementById('fsq_results1').innerHTML = '';
 				$("#fsq_results1").append('<h3>Venues with People</h3>');
@@ -197,7 +216,7 @@
 		<ul id="topNav"> 
 			<li><div id='searchbox'>
 				<div name='testform' onsubmit="updateAddress()">
-					<input id="searchEntry" type='text' size=65 name='address' value='Please enter in your address' onfocus='ClearForm();'/>
+					<input id="searchEntry" type='text' size=65 name='address' value='Please enter an address to see nearby users' onfocus='ClearForm();'/>
 					<input type='submit' value='Update Address' onclick="updateAddress()" class="button" />
 				</div>
 			</div><!--end of searchbox--></li>
@@ -212,6 +231,10 @@
 <div id='map_body'>
 	<div id="map_canvas"></div>
 </div><!--end of map_body-->   
+<div class='google_places'>
+	<h1>Google stuff</h1>
+	
+</div>
 <div class='results'>
 	<h2 id='nerds'>Foursquare Results</h2>
 	<div id='fsq_results1'></div>
