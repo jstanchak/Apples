@@ -81,7 +81,7 @@
 	}
 	
   function codeAddress() {
-    var address = document.getElementById("address").value;
+    var address = document.getElementById("searchEntry").value;
     geocoder.geocode( { 'address': address}, function(results, status) {
       if (status == google.maps.GeocoderStatus.OK) {
         map.setCenter(results[0].geometry.location);
@@ -101,19 +101,22 @@
 				var elName = 'fsq_'+venue_id;
 				document.getElementById(elName).innerHTML = '';
 				var userPhotos = [];
+				var userNames = [];
 				$.each(data.response.hereNow.items, function() {
 					$('#'+elName).append('<img src='+this.user.photo+' />');
 					userPhotos.push(this.user.photo);
+					nameString = this.user.firstName+' '+this.user.lastName;
+					userNames.push(nameString);
 				});
-				addVMarker(userPhotos, venueName, latlng, count);
+				addVMarker(userPhotos, userNames, venueName, latlng, count);
 			});
 	}	
 	
-	function addVMarker(images, venueName, latlng, count) {
+	function addVMarker(images, names, venueName, latlng, count) {
 		tString = venueName+' - '+count+' people here';
 		var contentStr = '<div class="box_title"><b>'+venueName+'</b></div><br /><div class="box_content">';
 		for (i in images) {
-			contentStr += '<img src='+images[i]+' width="110" height="110"/>';
+			contentStr += '<img src='+images[i]+' width="110" height="110"/ title='+names[i]+'>';
 		};
 		contentStr += '</div>';
 		vMarker = new google.maps.Marker({
@@ -174,8 +177,18 @@
 	}
 	
 	function ClearForm() {
-		document.getElementById('address').value="";
+		document.getElementById('searchEntry').value="";
 	}
+	
+	$(function() {
+		$('input').keydown(function(e){
+			if (e.keyCode == 13) {
+				updateAddress();
+				return false;
+			}
+		});
+	});
+	
 </script>
 </head>
 <body onload="initialize()">
@@ -183,9 +196,9 @@
 	<div class="outsideContainer"> 
 		<ul id="topNav"> 
 			<li><div id='searchbox'>
-				<div name='testform'>
-					<input id="address" type='text' size=65 name='address' value='Please enter in your address' onfocus='ClearForm();'/>
-					<input type='submit' value='Update Address' onclick="updateAddress()" />
+				<div name='testform' onsubmit="updateAddress()">
+					<input id="searchEntry" type='text' size=65 name='address' value='Please enter in your address' onfocus='ClearForm();'/>
+					<input type='submit' value='Update Address' onclick="updateAddress()" class="button" />
 				</div>
 			</div><!--end of searchbox--></li>
 	    </ul> 
