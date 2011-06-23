@@ -78,6 +78,7 @@
 		map.setCenter(latlng);
 		var lat = map.getCenter().toString();
 		foursquareHandler(lat);
+		alert("we got to the end of the move!");
 	}
 	
   function codeAddress() {
@@ -103,7 +104,7 @@
 				var userPhotos = [];
 				var userNames = [];
 				$.each(data.response.hereNow.items, function() {
-					$('#'+elName).append('<img src='+this.user.photo+' />');
+					//$('#'+elName).append('<img src='+this.user.photo+' />');
 					userPhotos.push(this.user.photo);
 					nameString = this.user.firstName+' '+this.user.lastName;
 					userNames.push(nameString);
@@ -138,7 +139,7 @@
 	}
 	
 	function foursquareHandler(lat) {
-		foursquare(myLatlng, lat);
+		document.getElementById('fsq_results1').innerHTML = '';
 		var myLL = lat.toString();
 		var myLL1 = myLL.replace('(','');
 		var myLL2 = myLL1.replace(')','');
@@ -146,15 +147,25 @@
 		var coords = myLL3.split(',');
 		var baseLat = parseFloat(coords[0]);
 		var baseLng = parseFloat(coords[1]);
-		var lats = [baseLat, baseLat + .005, baseLat - .005];
-		var lngs = [baseLng, baseLng + .005, baseLng - .005];
+		var lats = [baseLat, baseLat + .002, baseLat - .002];
+		var lngs = [baseLng, baseLng + .002, baseLng - .002];
+		var fsq_coords = []
 		for (i in lats) {
 			for (j in lngs) {
 				var myLatlng = new google.maps.LatLng(lats[i], lngs[j]);
-				foursquare(myLatlng,myLatlng);
-			}
+				fsq_coords.push(myLatlng);
+			};
 		};
-		
+		foursquare(myLatlng, fsq_coords[0].toString());
+		foursquare(myLatlng, fsq_coords[1].toString());
+		foursquare(myLatlng, fsq_coords[2].toString());
+		foursquare(myLatlng, fsq_coords[3].toString());
+		foursquare(myLatlng, fsq_coords[4].toString());
+		foursquare(myLatlng, fsq_coords[5].toString());
+		foursquare(myLatlng, fsq_coords[6].toString());
+		foursquare(myLatlng, fsq_coords[7].toString());
+		foursquare(myLatlng, fsq_coords[8].toString());
+		foursquare(myLatlng, fsq_coords[9].toString());
 	}
 	
 	function foursquare(latlng, lat) {
@@ -165,12 +176,11 @@
         "ll": l_string, 
 		"limit": 50}, 
 			function(data) {
-				document.getElementById('fsq_results1').innerHTML = '';
-				$("#fsq_results1").append('<h3>Venues with People</h3>');
+				//$("#fsq_results1").append('<h3>Venues with People</h3>');
 				$.each(data.response.groups, function() {
 					$.each(this.items, function(){
 						if (this.hereNow.count > 0) {
-							$("#fsq_results1").append('<h5>'+this.name+'</h5><p>'+this.hereNow.count+' people here: </p>');
+							//$("#fsq_results1").append('<h5>'+this.name+'</h5><p>'+this.hereNow.count+' people here: </p>');
 							vlocation = new google.maps.LatLng(this.location.lat, this.location.lng);
 							hereNow(this.id, this.name, vlocation, this.hereNow.count);
 							var elName = 'fsq_'+this.id
@@ -178,11 +188,11 @@
 						};
 					});
 				});
-				$("#fsq_results1").append('<h3>Venues withOUT People</h3>');
+				//$("#fsq_results1").append('<h3>Venues withOUT People</h3>');
 				$.each(data.response.groups, function() {
 					$.each(this.items, function(){
 						if (this.hereNow.count == 0) {
-							$("#fsq_results1").append('<h5>'+this.name+'</h5>');
+							//$("#fsq_results1").append('<h5>'+this.name+'</h5>');
 							var elName = 'fsq_'+this.id;
 							$("<p>").attr("id",elName).appendTo("#fsq_results1");				
 						};
@@ -231,12 +241,7 @@
 <div id='map_body'>
 	<div id="map_canvas"></div>
 </div><!--end of map_body-->   
-<div class='google_places'>
-	<h1>Google stuff</h1>
-	
-</div>
 <div class='results'>
-	<h2 id='nerds'>Foursquare Results</h2>
 	<div id='fsq_results1'></div>
 </div><!--results-->	     
 </body>
