@@ -1,10 +1,7 @@
 <!DOCTYPE html>
 <head>
 	<title>G-Squared Map</title>
-	<link rel="stylesheet" type="text/css" href="/media/map/style.css" />
-	<!-->
-	<link href="apples/media/map/templatemo_style.css" rel="stylesheet" type="text/css" />
-	<!-->
+	<link rel="stylesheet" type="text/css" href="/media/tlsearch/style.css" />
 <link href="/media/favicon.ico" rel="icon" type="image/x-icon" />
 <meta name="viewport" content="initial-scale=1.0, user-scalable=yes" />
 <script src="/media/jquery-1.4.4.min.js"></script>
@@ -55,11 +52,13 @@
 		};
 		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
 		
-		// Detect location, then set center, marker, lat/long and foursquare to that location
+		// Detect location, then alert to tell location
 		if (navigator.geolocation) {
 			browserSupportFlag = true;
 			navigator.geolocation.getCurrentPosition(function(position) {
+				alert('your location is '+position.coords.latitude+', '+position.coords.longitude);
 				initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+				codeLatLng(initialLocation);
 				map.setCenter(initialLocation);
 				setMarker(initialLocation);
 				var lat = map.getCenter().toString();
@@ -75,11 +74,82 @@
 		};
 	}
 	
+	function codeLatLng(latlng) {
+		geocoder.geocode({'latLng': latlng}, function(results, status) {
+			if (status == google.maps.GeocoderStatus.OK) {
+				if (results[1]) {
+					//Narrow down to results with City, State, Country
+					for (i in results) {
+						var address = results[i].formatted_address.split(", ");
+						if (address.length==3) {
+							//Narrow down to results with two letters for State
+							var state = address[1].split(" ");
+							if (state.length==1 && state[0].length==2) {
+								//Assign values to API parameters
+								var COUNTRY_CODE = address[2];
+								var REGION_NAME = address[1];
+								var CITY = address[0];
+								tlSearch(COUNTRY_CODE,REGION_NAME,CITY,'2011-07-05');
+							};
+						};
+					};
+				}
+				else {
+					alert("No results found");
+				}
+			} else {
+				alert("Geocoder failed due to: "+status);
+			}
+		});
+	}
+	
+	function sortAlg(a,b) {
+		return a-b;
+	}
+	
+	function tlSearch(COUNTRY_CODE,REGION_NAME,CITY,date) {
+		var tlUrl = 'http://public-api.ticketleap.com/events/by/location/'+COUNTRY_CODE+'/'+REGION_NAME+'/'+CITY;
+		alert(tlUrl);
+		$.getJSON(tlUrl+'?key=5382714350143704&page_size=100&dates_after='+date+'&callback=?', {},
+			function(data) {
+				$("#fsq_results1").append('<h3>Total Event Count: '+data.total_count+'</h3>');
+				$("#fsq_results1").append('<table cellpadding="0" cellspacing="0" id="results"></table>');
+				var dataArray = [];
+				$.each(data.events, function() {
+					//Add a comparable date for sorting, based on earliest_start_local
+					var compDate = Date.parse(this.earliest_start_local);
+					//alert('the compDate is '+compDate);
+					this.compDate = compDate;
+					dataArray.push(this);
+				});
+				dataArray.sort(function(a,b) {
+					return a.compDate-b.compDate
+				});
+				for (i in dataArray) {
+					var elName = 'tl_'+dataArray[i].slug;
+					$("<tr>").attr("id",elName).appendTo("#results");
+					getEventInfo(dataArray[i].slug, dataArray[i]);
+				}
+			});
+	}
+	
+	function getEventInfo(eventSlug, info) {
+		var elName = 'tl_'+info.slug;
+		$('#'+elName).append('<td class="image" width="80em"><a href="'+info.url+'"> <img src='+info.image_url_search+' /></a></td>'
+			+'<td><h3><a href="'+info.url+'">'+info.name+'</a></h3>'
+			+'<table cellpadding="0" cellspacing="0"><tr class="meta">'
+			+'<td class="first" width="350em"><strong>'+info.earliest_start_local+' to '+info.earliest_end_local+'</strong><br />'
+			+'Organized by <a href="http://'+info.organization_slug+'.ticketleap.com">'+info.organization_name+'</a></td>'
+			+'<td><strong>'+info.venue_name+'</strong><br/>'+info.venue_street+', '+info.venue_city+', '+info.venue_region_name+'</td></tr></table>'
+			+'<p id="desc">'+info.description+'</p></td></tr>');	
+	}
+	
 	function moveMarker(latlng) {
 		deletePMarkers();
 		map.setCenter(latlng);
 		var lat = map.getCenter().toString();
 		foursquareHandler(lat);
+		codeLatLng(latlng);
 	}
 	
   function codeAddress() {
@@ -96,48 +166,6 @@
       }
     });
   }
-	
-	function hereNow(venue_id, venueName, latlng, count) {
-		$.getJSON('https://api.foursquare.com/v2/venues/'+venue_id+'/herenow?', {"oauth_token":"VRRXHCCBZAKR0XXBB11BZJSA1K2TVBM5FIAEXWDRFKGJT44I"}, 
-			function(data) {
-				var elName = 'fsq_'+venue_id;
-				document.getElementById(elName).innerHTML = '';
-				var userPhotos = [];
-				var userNames = [];
-				$.each(data.response.hereNow.items, function() {
-					//$('#'+elName).append('<img src='+this.user.photo+' />');
-					userPhotos.push(this.user.photo);
-					nameString = this.user.firstName+' '+this.user.lastName;
-					userNames.push(nameString);
-				});
-				addVMarker(userPhotos, userNames, venueName, latlng, count);
-			});
-	}	
-	
-	function addVMarker(images, names, venueName, latlng, count) {
-		tString = venueName+' - '+count+' people here';
-		var contentStr = '<div class="box_title"><b>'+venueName+'</b></div><br /><div class="box_content">';
-		for (i in images) {
-			contentStr += '<img src='+images[i]+' width="110" height="110"/ title='+names[i]+'>';
-		};
-		contentStr += '</div>';
-		vMarker = new google.maps.Marker({
-			position: latlng,
-			map: map,
-			draggable: false,
-			icon: fsq_image,
-			title: tString,
-			html: contentStr,
-		});
-		markersArray.push(vMarker);
-		infowindow = new google.maps.InfoWindow({
-			maxWidth: 330,
-		});
-		google.maps.event.addListener(vMarker, 'mouseover', function() {
-			infowindow.setContent(this.html);
-			infowindow.open(map, this);
-		});
-	}
 	
 	function foursquareHandler(lat) {
 		document.getElementById('fsq_results1').innerHTML = '';
@@ -163,21 +191,6 @@
 		};
 	}
 	
-	function addEMarker(venueName, latlng, count) {
-		tString = venueName;
-		var contentStr = '<div class="box_title"><b>'+venueName+'</b></div><br /><div class="box_content">';
-		contentStr += '</div>';
-		vMarker = new google.maps.Marker({
-			position: latlng,
-			map: map,
-			draggable: false,
-			icon: e_fsq_image,
-			title: tString,
-			html: contentStr,
-		});
-		markersArray.push(vMarker);
-	}
-	
 	function foursquare(latlng, lat) {
 
 		var lstring = lat.replace('(','');
@@ -193,24 +206,14 @@
 						if (this.hereNow.count > 0) {
 							//$("#fsq_results1").append('<h5>'+this.name+'</h5><p>'+this.hereNow.count+' people here: </p>');
 							vlocation = new google.maps.LatLng(this.location.lat, this.location.lng);
-							hereNow(this.id, this.name, vlocation, this.hereNow.count);
+							//hereNow(this.id, this.name, vlocation, this.hereNow.count);
 							var elName = 'fsq_'+this.id
 							$("<p>").attr("id",elName).appendTo("#fsq_results1");				
 						};
 					});
 				});
 				//$("#fsq_results1").append('<h3>Venues withOUT People</h3>');
-				$.each(data.response.groups, function() {
-					$.each(this.items, function(){
-						if (this.hereNow.count == 0) {
-							//$("#fsq_results1").append('<h5>'+this.name+'</h5>');
-							vlocation = new google.maps.LatLng(this.location.lat, this.location.lng);
-							addEMarker(this.name, vlocation, this.hereNow.count);
-							var elName = 'fsq_'+this.id;
-							$("<p>").attr("id",elName).appendTo("#fsq_results1");				
-						};
-					});
-				});
+
 			});
 	}
 	
@@ -244,17 +247,31 @@
 				</div>
 			</div><!--end of searchbox--></li>
 	    </ul> 
-	    <a href="http://www.jennystanchak.com/" id="logo"><img src="/media/map/images/map_logo.png" /></a> 
+	    <a href="http://www.jennystanchak.com/tlsearch" id="logo"><img src="/media/tlsearch/images/logo.png" /></a> 
 	</div> 
 </div>
 <div style="height: 5px !important;" id="nav"> 
   <div class="outsideContainer"> 
-	THIS IS A TEST
   </div> 
 </div>
-<div id='map_body'>
-	<div id="map_canvas"></div>
-</div><!--end of map_body-->   
+<div id='parameters'>
+	<div id="map_canvas">
+		<h3>Search terms</h3>
+		<ul>
+			<li>Location</li>
+			<li>Keyword</li>
+			<li>Timespan</li>
+			<li>Tag</li>
+		</ul>
+		<h3>Sort By</h3>
+		<ul>
+			<li>Time (close, far)</li>
+			<li>Distance (close, far)</li>
+			<li>Amount of social</li>
+			<li>Price (high, low)</li>
+		<ul>
+	</div>
+</div><!--end of parameters-->   
 <div class='results'>
 	<div id='fsq_results1'></div>
 </div><!--results-->	     
