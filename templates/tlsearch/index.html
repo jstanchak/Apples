@@ -10,71 +10,28 @@
 <script>
 	var geocoder;
 	var map;
-	var myLatlng = new google.maps.LatLng(39.942245, -75.15716040000001);
-	var marker; 
-	var markersArray = [];
 	var browserSupportFlag = new Boolean();
 	var initialLocation;
-	var fsq_image = '/media/map/images/foursquare.png';
-	var e_fsq_image = '/media/map/images/empty.png';
-	var infowindow;
-
-	
-	function deletePMarkers() {
-		if (markersArray) {
-			for (i in markersArray) {
-				markersArray[i].setMap(null);
-			}
-			markersArray.length = 0;
-		}
-	}
-	
-	function setMarker(latlng) {
-		if (marker) {
-			marker.setMap(null);
-		};	
-		marker = new google.maps.Marker( {
-			map: map,
-			position: latlng,
-			draggable: true
-		});
-		google.maps.event.addListener(marker, 'dragend', function(event) {
-		    moveMarker(event.latLng);
-		});
-	}
-		
 	
 	function initialize () {
 		geocoder = new google.maps.Geocoder();
-		var myOptions = {
-			zoom: 16,
-			mapTypeId: google.maps.MapTypeId.ROADMAP
-		};
-		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
 		
 		// Detect location, then alert to tell location
 		if (navigator.geolocation) {
 			browserSupportFlag = true;
 			navigator.geolocation.getCurrentPosition(function(position) {
-				alert('your location is '+position.coords.latitude+', '+position.coords.longitude);
+				//alert('your location is '+position.coords.latitude+', '+position.coords.longitude);
 				initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
 				codeLatLng(initialLocation);
-				map.setCenter(initialLocation);
-				setMarker(initialLocation);
-				var lat = map.getCenter().toString();
-				foursquareHandler(lat);
 			}, function() {
 				alert("Geolocation not supported.  We've stuck you on the Empire State Building.")
 				initialLocation = new google.maps.LatLng(40.748379, -73.98555999999996)
-				map.setCenter(initialLocation);
-				setMarker(initialLocation);
-				var lat = map.getCenter().toString();
-				foursquareHandler(lat);
 			});
 		};
 	}
 	
 	function codeLatLng(latlng) {
+		//alert("we are in the codeLatlng function!");
 		geocoder.geocode({'latLng': latlng}, function(results, status) {
 			if (status == google.maps.GeocoderStatus.OK) {
 				if (results[1]) {
@@ -103,13 +60,9 @@
 		});
 	}
 	
-	function sortAlg(a,b) {
-		return a-b;
-	}
-	
 	function tlSearch(COUNTRY_CODE,REGION_NAME,CITY,date) {
 		var tlUrl = 'http://public-api.ticketleap.com/events/by/location/'+COUNTRY_CODE+'/'+REGION_NAME+'/'+CITY;
-		alert(tlUrl);
+		//alert(tlUrl);
 		$.getJSON(tlUrl+'?key=5382714350143704&page_size=100&dates_after='+date+'&callback=?', {},
 			function(data) {
 				$("#fsq_results1").append('<h3>Total Event Count: '+data.total_count+'</h3>');
@@ -144,85 +97,28 @@
 			+'<p id="desc">'+info.description+'</p></td></tr>');	
 	}
 	
-	function moveMarker(latlng) {
-		deletePMarkers();
-		map.setCenter(latlng);
-		var lat = map.getCenter().toString();
-		foursquareHandler(lat);
-		codeLatLng(latlng);
-	}
-	
-  function codeAddress() {
-    var address = document.getElementById("searchEntry").value;
-    geocoder.geocode( { 'address': address}, function(results, status) {
-      if (status == google.maps.GeocoderStatus.OK) {
-        map.setCenter(results[0].geometry.location);
-        setMarker(results[0].geometry.location);
-		deletePMarkers();
-		var lat = map.getCenter().toString();
-		foursquare(myLatlng, lat);
-      } else {
-        alert("Geocode was not successful for the following reason: " + status);
-      }
-    });
-  }
-	
-	function foursquareHandler(lat) {
-		document.getElementById('fsq_results1').innerHTML = '';
-		var myLL = lat.toString();
-		var myLL1 = myLL.replace('(','');
-		var myLL2 = myLL1.replace(')','');
-		var myLL3 = myLL2.replace(' ','');
-		var coords = myLL3.split(',');
-		var baseLat = parseFloat(coords[0]);
-		var baseLng = parseFloat(coords[1]);
-		var lats = [baseLat, baseLat + .002, baseLat - .002];
-		var lngs = [baseLng, baseLng + .002, baseLng - .002];
-		var fsq_coords = []
-		for (i in lats) {
-			for (j in lngs) {
-				var myLatlng = new google.maps.LatLng(lats[i], lngs[j]);
-				fsq_coords.push(myLatlng);
-			};
-		};
-		foursquare(myLatlng,myLL);
-		for (i in fsq_coords) {
-			foursquare(myLatlng, fsq_coords[i].toString());
-		};
-	}
-	
-	function foursquare(latlng, lat) {
-
-		var lstring = lat.replace('(','');
-		var l_string = lstring.replace(')','');
-
-		$.getJSON('https://api.foursquare.com/v2/venues/search?', {"oauth_token": "VRRXHCCBZAKR0XXBB11BZJSA1K2TVBM5FIAEXWDRFKGJT44I",
-        "ll": l_string, 
-		"limit": 50}, 
-			function(data) {
-				//$("#fsq_results1").append('<h3>Venues with People</h3>');
-				$.each(data.response.groups, function() {
-					$.each(this.items, function(){
-						if (this.hereNow.count > 0) {
-							//$("#fsq_results1").append('<h5>'+this.name+'</h5><p>'+this.hereNow.count+' people here: </p>');
-							vlocation = new google.maps.LatLng(this.location.lat, this.location.lng);
-							//hereNow(this.id, this.name, vlocation, this.hereNow.count);
-							var elName = 'fsq_'+this.id
-							$("<p>").attr("id",elName).appendTo("#fsq_results1");				
-						};
-					});
-				});
-				//$("#fsq_results1").append('<h3>Venues withOUT People</h3>');
-
-			});
+  	function codeAddress() {
+    	var CITY = document.getElementById("city").value;
+		var REGION_NAME = document.getElementById("state").value;
+		var COUNTRY_CODE = document.getElementById("country").value;
+    	tlSearch(COUNTRY_CODE,REGION_NAME,CITY,'2011-07-05');
 	}
 	
 	function updateAddress() {
+		document.getElementById('fsq_results1').innerHTML = '';
 		codeAddress();
 	}
 	
-	function ClearForm() {
-		document.getElementById('searchEntry').value="";
+	function ClearCity() {
+		document.getElementById('city').value="";
+	}
+	
+	function ClearState() {
+		document.getElementById('state').value="";
+	}
+	
+	function ClearCountry() {
+		document.getElementById('country').value="";
 	}
 	
 	$(function() {
@@ -242,8 +138,10 @@
 		<ul id="topNav"> 
 			<li><div id='searchbox'>
 				<div name='testform' onsubmit="updateAddress()">
-					<input id="searchEntry" type='text' size=65 name='address' value='Please enter an address to see nearby users' onfocus='ClearForm();'/>
-					<input type='submit' value='Update Address' onclick="updateAddress()" class="button" />
+					<input id="city" type='text' size=25 name='city' value='City' onfocus='ClearCity();'/>
+					<input id="state" type='text' size=25 name='state' value='State' onfocus='ClearState();'/>
+					<input id="country" type='text' size=25 name='country' value='Country' onfocus='ClearCountry();'/>
+					<input type='submit' value='Find Events' onclick="updateAddress()" class="button" />
 				</div>
 			</div><!--end of searchbox--></li>
 	    </ul> 
