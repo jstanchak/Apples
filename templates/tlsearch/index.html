@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<head>
+	<title>G-Squared Map</title>
+	<link rel="stylesheet" type="text/css" href="/media/map/style.css" />
+	<!-->
+	<link href="apples/media/map/templatemo_style.css" rel="stylesheet" type="text/css" />
+	<!-->
+<link href="/media/favicon.ico" rel="icon" type="image/x-icon" />
+<meta name="viewport" content="initial-scale=1.0, user-scalable=yes" />
+<script src="/media/jquery-1.4.4.min.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?libraries=geometry&sensor=false"></script>
+<script src="http://code.jquery.com/jquery-1.5.js"></script>
+<script>
+	var geocoder;
+	var map;
+	var myLatlng = new google.maps.LatLng(39.942245, -75.15716040000001);
+	var marker; 
+	var markersArray = [];
+	var browserSupportFlag = new Boolean();
+	var initialLocation;
+	var fsq_image = '/media/map/images/foursquare.png';
+	var e_fsq_image = '/media/map/images/empty.png';
+	var infowindow;
+
+	
+	function deletePMarkers() {
+		if (markersArray) {
+			for (i in markersArray) {
+				markersArray[i].setMap(null);
+			}
+			markersArray.length = 0;
+		}
+	}
+	
+	function setMarker(latlng) {
+		if (marker) {
+			marker.setMap(null);
+		};	
+		marker = new google.maps.Marker( {
+			map: map,
+			position: latlng,
+			draggable: true
+		});
+		google.maps.event.addListener(marker, 'dragend', function(event) {
+		    moveMarker(event.latLng);
+		});
+	}
+		
+	
+	function initialize () {
+		geocoder = new google.maps.Geocoder();
+		var myOptions = {
+			zoom: 16,
+			mapTypeId: google.maps.MapTypeId.ROADMAP
+		};
+		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+		
+		// Detect location, then set center, marker, lat/long and foursquare to that location
+		if (navigator.geolocation) {
+			browserSupportFlag = true;
+			navigator.geolocation.getCurrentPosition(function(position) {
+				initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+				map.setCenter(initialLocation);
+				setMarker(initialLocation);
+				var lat = map.getCenter().toString();
+				foursquareHandler(lat);
+			}, function() {
+				alert("Geolocation not supported.  We've stuck you on the Empire State Building.")
+				initialLocation = new google.maps.LatLng(40.748379, -73.98555999999996)
+				map.setCenter(initialLocation);
+				setMarker(initialLocation);
+				var lat = map.getCenter().toString();
+				foursquareHandler(lat);
+			});
+		};
+	}
+	
+	function moveMarker(latlng) {
+		deletePMarkers();
+		map.setCenter(latlng);
+		var lat = map.getCenter().toString();
+		foursquareHandler(lat);
+	}
+	
+  function codeAddress() {
+    var address = document.getElementById("searchEntry").value;
+    geocoder.geocode( { 'address': address}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        map.setCenter(results[0].geometry.location);
+        setMarker(results[0].geometry.location);
+		deletePMarkers();
+		var lat = map.getCenter().toString();
+		foursquare(myLatlng, lat);
+      } else {
+        alert("Geocode was not successful for the following reason: " + status);
+      }
+    });
+  }
+	
+	function hereNow(venue_id, venueName, latlng, count) {
+		$.getJSON('https://api.foursquare.com/v2/venues/'+venue_id+'/herenow?', {"oauth_token":"VRRXHCCBZAKR0XXBB11BZJSA1K2TVBM5FIAEXWDRFKGJT44I"}, 
+			function(data) {
+				var elName = 'fsq_'+venue_id;
+				document.getElementById(elName).innerHTML = '';
+				var userPhotos = [];
+				var userNames = [];
+				$.each(data.response.hereNow.items, function() {
+					//$('#'+elName).append('<img src='+this.user.photo+' />');
+					userPhotos.push(this.user.photo);
+					nameString = this.user.firstName+' '+this.user.lastName;
+					userNames.push(nameString);
+				});
+				addVMarker(userPhotos, userNames, venueName, latlng, count);
+			});
+	}	
+	
+	function addVMarker(images, names, venueName, latlng, count) {
+		tString = venueName+' - '+count+' people here';
+		var contentStr = '<div class="box_title"><b>'+venueName+'</b></div><br /><div class="box_content">';
+		for (i in images) {
+			contentStr += '<img src='+images[i]+' width="110" height="110"/ title='+names[i]+'>';
+		};
+		contentStr += '</div>';
+		vMarker = new google.maps.Marker({
+			position: latlng,
+			map: map,
+			draggable: false,
+			icon: fsq_image,
+			title: tString,
+			html: contentStr,
+		});
+		markersArray.push(vMarker);
+		infowindow = new google.maps.InfoWindow({
+			maxWidth: 330,
+		});
+		google.maps.event.addListener(vMarker, 'mouseover', function() {
+			infowindow.setContent(this.html);
+			infowindow.open(map, this);
+		});
+	}
+	
+	function foursquareHandler(lat) {
+		document.getElementById('fsq_results1').innerHTML = '';
+		var myLL = lat.toString();
+		var myLL1 = myLL.replace('(','');
+		var myLL2 = myLL1.replace(')','');
+		var myLL3 = myLL2.replace(' ','');
+		var coords = myLL3.split(',');
+		var baseLat = parseFloat(coords[0]);
+		var baseLng = parseFloat(coords[1]);
+		var lats = [baseLat, baseLat + .002, baseLat - .002];
+		var lngs = [baseLng, baseLng + .002, baseLng - .002];
+		var fsq_coords = []
+		for (i in lats) {
+			for (j in lngs) {
+				var myLatlng = new google.maps.LatLng(lats[i], lngs[j]);
+				fsq_coords.push(myLatlng);
+			};
+		};
+		foursquare(myLatlng,myLL);
+		for (i in fsq_coords) {
+			foursquare(myLatlng, fsq_coords[i].toString());
+		};
+	}
+	
+	function addEMarker(venueName, latlng, count) {
+		tString = venueName;
+		var contentStr = '<div class="box_title"><b>'+venueName+'</b></div><br /><div class="box_content">';
+		contentStr += '</div>';
+		vMarker = new google.maps.Marker({
+			position: latlng,
+			map: map,
+			draggable: false,
+			icon: e_fsq_image,
+			title: tString,
+			html: contentStr,
+		});
+		markersArray.push(vMarker);
+	}
+	
+	function foursquare(latlng, lat) {
+
+		var lstring = lat.replace('(','');
+		var l_string = lstring.replace(')','');
+
+		$.getJSON('https://api.foursquare.com/v2/venues/search?', {"oauth_token": "VRRXHCCBZAKR0XXBB11BZJSA1K2TVBM5FIAEXWDRFKGJT44I",
+        "ll": l_string, 
+		"limit": 50}, 
+			function(data) {
+				//$("#fsq_results1").append('<h3>Venues with People</h3>');
+				$.each(data.response.groups, function() {
+					$.each(this.items, function(){
+						if (this.hereNow.count > 0) {
+							//$("#fsq_results1").append('<h5>'+this.name+'</h5><p>'+this.hereNow.count+' people here: </p>');
+							vlocation = new google.maps.LatLng(this.location.lat, this.location.lng);
+							hereNow(this.id, this.name, vlocation, this.hereNow.count);
+							var elName = 'fsq_'+this.id
+							$("<p>").attr("id",elName).appendTo("#fsq_results1");				
+						};
+					});
+				});
+				//$("#fsq_results1").append('<h3>Venues withOUT People</h3>');
+				$.each(data.response.groups, function() {
+					$.each(this.items, function(){
+						if (this.hereNow.count == 0) {
+							//$("#fsq_results1").append('<h5>'+this.name+'</h5>');
+							vlocation = new google.maps.LatLng(this.location.lat, this.location.lng);
+							addEMarker(this.name, vlocation, this.hereNow.count);
+							var elName = 'fsq_'+this.id;
+							$("<p>").attr("id",elName).appendTo("#fsq_results1");				
+						};
+					});
+				});
+			});
+	}
+	
+	function updateAddress() {
+		codeAddress();
+	}
+	
+	function ClearForm() {
+		document.getElementById('searchEntry').value="";
+	}
+	
+	$(function() {
+		$('input').keydown(function(e){
+			if (e.keyCode == 13) {
+				updateAddress();
+				return false;
+			}
+		});
+	});
+	
+</script>
+</head>
+<body onload="initialize()">
+<div id="header"> 
+	<div class="outsideContainer"> 
+		<ul id="topNav"> 
+			<li><div id='searchbox'>
+				<div name='testform' onsubmit="updateAddress()">
+					<input id="searchEntry" type='text' size=65 name='address' value='Please enter an address to see nearby users' onfocus='ClearForm();'/>
+					<input type='submit' value='Update Address' onclick="updateAddress()" class="button" />
+				</div>
+			</div><!--end of searchbox--></li>
+	    </ul> 
+	    <a href="http://www.jennystanchak.com/" id="logo"><img src="/media/map/images/map_logo.png" /></a> 
+	</div> 
+</div>
+<div style="height: 5px !important;" id="nav"> 
+  <div class="outsideContainer"> 
+	THIS IS A TEST
+  </div> 
+</div>
+<div id='map_body'>
+	<div id="map_canvas"></div>
+</div><!--end of map_body-->   
+<div class='results'>
+	<div id='fsq_results1'></div>
+</div><!--results-->	     
+</body>
