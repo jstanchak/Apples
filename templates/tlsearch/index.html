@@ -14,6 +14,8 @@
 	var initialLocation;
 	var megaArray = [];
 	var today = new Date();
+	var today_for_api = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+	alert(today_for_api);
 	
 	function initialize () {
 		geocoder = new google.maps.Geocoder();
@@ -27,7 +29,8 @@
 				codeLatLng(initialLocation);
 			}, function() {
 				alert("Geolocation not supported.  We've stuck you on the Empire State Building.")
-				initialLocation = new google.maps.LatLng(40.748379, -73.98555999999996)
+				initialLocation = new google.maps.LatLng(40.748379, -73.98555999999996);
+				codeLatlng(initialLocation);
 			});
 		};
 	}
@@ -48,7 +51,7 @@
 								var COUNTRY_CODE = address[2];
 								var REGION_NAME = address[1];
 								var CITY = address[0];
-								tlSearch(COUNTRY_CODE,REGION_NAME,CITY,'2011-07-05');
+								tlSearch(COUNTRY_CODE,REGION_NAME,CITY,today_for_api);
 							};
 						};
 					};
@@ -64,39 +67,24 @@
 	
 	function tlSearch(COUNTRY_CODE,REGION_NAME,CITY,date) {
 		var tlUrl = 'http://public-api.ticketleap.com/events/by/location/'+COUNTRY_CODE+'/'+REGION_NAME+'/'+CITY;
-		//alert(tlUrl);
 		$.getJSON(tlUrl+'?key=5382714350143704&page_size=100&dates_after='+date+'&callback=?', {},
 			function(data) {
-				$("#fsq_results1").append('<h3>Total Event Count: '+data.total_count+'</h3>');
+				$("#fsq_results1").append('<h3>Searching '+data.total_count+' events...<div id="performances"></div></h3>');
 				$("#fsq_results1").append('<table cellpadding="0" cellspacing="0" id="results"></table>');
-				var dataArray = [];
 				var eventArray = []
 				$.each(data.events, function() {
 					//Get the org slug and event slug from each event in order to do performance search
 					var miniArray = [this.organization_slug, this.slug];
 					eventArray.push(miniArray);
-					//Add a comparable date for sorting, based on earliest_start_local
-					var compDate = Date.parse(this.earliest_start_local);
-					//alert('the compDate is '+compDate);
-					this.compDate = compDate;
-					dataArray.push(this);
 				});
 				getPerformanceInfo(eventArray);
-				dataArray.sort(function(a,b) {
-					return a.compDate-b.compDate
-				});
-				//for (i in dataArray) {
-					//var elName = 'tl_'+dataArray[i].slug;
-					//$("<tr>").attr("id",elName).appendTo("#results");
-					//getEventInfo(dataArray[i]);
-				//}
 			});
 	}
 	
 	function getPerformanceInfo(eventArray) {
+		var lastOne = eventArray[eventArray.length-1];
+		var lastSlug = lastOne[1];
 		$.each(eventArray, function() {
-			//alert('the org slug is '+this[0]);
-			//alert('the event slug is '+this[1]);
 			var tlUrl = 'http://public-api.ticketleap.com/organizations/'+this[0]+'/events/'+this[1];
 			$.getJSON(tlUrl+'?key=5382714350143704&callback=?', {},
 				function(data) {
@@ -108,7 +96,7 @@
 						perfArray.url = this.url;
 						perfArray.start = this.start_local;
 						perfArray.end = this.end_local;
-						perfArray.desc = data.description;
+						perfArray.desc = data.description.slice(0,100)+'...';
 						perfArray.image = data.image_url_search;
 						perfArray.venue = data.venue_name;
 						perfArray.location = data.venue_street+', '+data.venue_city+', '+data.venue_region_name;
@@ -117,9 +105,14 @@
 						//Get sortable date
 						var compDate = Date.parse(this.start_local);
 						perfArray.compDate = compDate;
-						//alert('The start time is '+perfArray.start);
-						//alert('The organization is '+perfArray.organization);
 						megaArray.push(perfArray);
+						//if the event is the last in the array, and last performance, display the results
+						if (data.slug == lastSlug) {
+							var lastPerf = data.performances[data.performances.length-1];
+							if (this.slug == lastPerf.slug) {
+								showMe();
+							}
+						}
 					});
 				})
 		})
@@ -137,6 +130,20 @@
 				+'<td><strong>'+info.venue+'</strong><br/>'+info.location+'</td></tr></table>'
 				+'<p id="desc">'+info.desc+'</p></td></tr>');
 		};	
+	}
+	
+	function showMe() {
+		document.getElementById('performances').innerHTML = 'Found '+megaArray.length+' performances!';
+		//Sort Arrays
+		megaArray.sort(function(a,b) {
+			return a.compDate-b.compDate
+		});
+		//Display results
+		for (i in megaArray) {
+			var elName = 'tl_'+megaArray[i].slug;
+			$("<tr>").attr("id",elName).appendTo("#results");
+			getEventInfo(megaArray[i]);
+		}
 	}
 	
   	function codeAddress() {
@@ -162,20 +169,6 @@
 	
 	function ClearCountry() {
 		document.getElementById('country').value="";
-	}
-	
-	function showMe() {
-		document.getElementById('results').innerHTML = '';
-		//Sort Arrays
-		megaArray.sort(function(a,b) {
-			return a.compDate-b.compDate
-		});
-		//Display results
-		for (i in megaArray) {
-			var elName = 'tl_'+megaArray[i].slug;
-			$("<tr>").attr("id",elName).appendTo("#results");
-			getEventInfo(megaArray[i]);
-		}
 	}
 	
 	$(function() {
@@ -227,8 +220,9 @@
 		<ul>
 	</div>
 </div><!--end of parameters-->
-<input type='submit' value='Display results after "Total Event Count" loads' onclick='showMe()' class'button'>   
-<div class='results'>
-	<div id='fsq_results1'></div>
-</div><!--results-->	     
+<div class="outsideContainer">
+	<div class='results'>
+		<div id='fsq_results1'></div>
+	</div><!--results-->	     
+</div><!--end of outsideContainer-->
 </body>
