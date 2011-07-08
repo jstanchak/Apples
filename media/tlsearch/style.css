@@ -59,6 +59,7 @@ a:visited{color:#551a8b;}
 .clear{
 	overflow: hidden;
 	width:100%;
+	clear: both;
 }
 
 a.button {
