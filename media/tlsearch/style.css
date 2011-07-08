@@ -108,11 +108,18 @@ a.button:active span {
 #header_find_form input{width:300px;height:22px;padding:3px 0 1px 5px;font-size:17px;color:#333;border:1px solid #ccc;background:url(//media3.px.yelpcdn.com/static/201012163545511154/i/gfx/header_sprite.png) no-repeat 0 -152px;}
 #header_find_form input:active{border-color:#888;outline:0;}
 #header_find_form #search_near input{float:left;width:290px;}
-#header_find_form .ybtn{position:absolute;top:22px;right:10px;}
+#header_find_form .ybtn{position:absolute;top:70px;right:10px;}
 label span{color:#666;font-size:11px;font-style:normal;font-weight:normal;}
 label{color:#1d87b8;display:block;font-weight:bold;margin-bottom:2px;}
 
 button{font-family:arial,'Lucida Grande','Bitstream Vera Sans',verdana,sans-serif;font-size:12px;}
+
+.resultNum {font-size:17px;}
+#searchTerm, #searchLocation, #eventCount {display:inline;}
+.sort, .pagination{color:#1d87b8;display:block;font-weight:bold;margin-bottom:2px;font-size:11px;}
+.sort span, .pagination span, .pages{color:#666;font-size:11px;font-style:normal;font-weight:normal;}
+.pages {float:right;display:inline;}
+.pagination{float:left; display:inline;}
 
 #lightData table{
 	position:absolute;
@@ -137,6 +144,6 @@ button{font-family:arial,'Lucida Grande','Bitstream Vera Sans',verdana,sans-seri
 #result_table {color:#646464;font-size:11px;display:block;}
 
 #result_table h3 a{color:#1d87b8;font-size:14px;display:block;margin:0 0 4px;text-decoration:none;}
-#result_table a{font-size:11px;position:relative;left:3px;top:-1px;text-decoration:none;}
+#result_table a{font-size:11px;position:relative;left:1px;text-decoration:none;}
 
 #result_table #desc{font-size:12px;}

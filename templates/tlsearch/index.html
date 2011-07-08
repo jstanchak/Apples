@@ -42,6 +42,38 @@
 		};
 	}
 	
+	function fetch() {
+		document.getElementById("resultControls").style.display = "none";
+		//Ready the loading box
+		document.getElementById("boxLocation2").innerHTML = "";
+		document.getElementById("boxEvents1").innerHTML = "";
+		document.getElementById("boxEvents2").innerHTML = "";
+		document.getElementById("boxPerformance1").innerHTML = "";
+		document.getElementById("boxPerformance2").innerHTML = "";
+		$("#inline").trigger('click');
+		
+		megaArray = [];
+		document.getElementById("fsq_results1").innerHTML = "";
+		var address = document.getElementById("find_loc").value;
+		geocoder.geocode({'address': address}, function(results, status) {
+			if (status== google.maps.GeocoderStatus.OK) {
+				if(results[0]) {
+					var addy = results[0].formatted_address.split(", ");
+					var state = addy[1].split(" ");
+					var COUNTRY_CODE = addy[2];
+					var REGION_NAME = state[0];
+					var CITY = addy[0];
+					$("#boxLocation2").append("Awesome, you're in "+CITY+"!");
+					document.getElementById("searchLocation").innerHTML = " in "+CITY;
+					$("#boxEvents1").append("Searching for events near you...");
+					tlSearch(COUNTRY_CODE, REGION_NAME, CITY, today_for_api);
+				};
+			} else {
+				alert("Geocoder failed due to: "+status);
+			}
+		});
+	}
+	
 	function codeLatLng(latlng) {
 		//alert("we are in the codeLatlng function!");
 		geocoder.geocode({'latLng': latlng}, function(results, status) {
@@ -175,6 +207,8 @@
 	
 	function showMe() {
 		$("#boxPerformance2").append(megaArray.length+" killer event times for you!");
+		document.getElementById("eventCount").innerHTML = megaArray.length;
+		document.getElementById("resultControls").style.display = "";
 		//Sort Arrays
 		megaArray.sort(function(a,b) {
 			return a.compDate-b.compDate
@@ -256,16 +290,22 @@
 					</p> 
 					<p id="search_near" class="clearfix"> 
 						<label for="dropperText_Mast">Near City or Zip <span>(e.g. San Francisco, CA or 92130)</span></label> 
-
-						<input maxlength="64" name="find_loc" tabindex="2" id="dropperText_Mast" size="14" value="Philadelphia, PA"> 
+						<input maxlength="64" name="find_loc" tabindex="2" id="find_loc" size="14" value="Philadelphia, PA"> 
 					</p> 
-					<a class="button" href="" onclick="this.blur();"><span>Search</span></a>
+					<a class="button" style="position:absolute;top:28px" onclick="this.blur(); fetch()"><span>Search</span></a>
 
 				</form>
 			</div><!--end searchbox-->
 			<div class="clear"></div>
-			<div id="resultControls">
+			
+			<div id="resultControls" style="display:none">
+				<div class="resultNum"><div id="eventCount">10,000,000</div> event times<div id="searchTerm"> for taco</div><div id="searchLocation"> in Philadelphia</div></div>
+				<div class="sort">Sort: <span><a>Date/Time</a> | <a>Social Activity</a> | <a>Distance</a></span></div>
+				<div class="pagination">Show: <span><a>10</a> | <a>20</a> | <a>50</a></span></div>
+				<div class="pages"><span id="previous">prev </span>1 2 3 4 5 6<span id="next"> next</span></div>
+				<div class="clear"></div>
 			</div><!--end resultControls-->
+			
 			<!--beginning of lightbox controls-->
 			<a style="display:none" id="inline" href="#lightData">This shows the content of element who has id="lightData"</a>
 			<div style="display:none"><div id="lightData">
