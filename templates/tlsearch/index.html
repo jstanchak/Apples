@@ -2,11 +2,17 @@
 <head>
 	<title>Ticket Beacon</title>
 	<link rel="stylesheet" type="text/css" href="/media/tlsearch/style.css" />
+	<link rel="stylesheet" href="/media/webfontkit/stylesheet.css" type="text/css" charset="utf-8" />
 <link href="/media/favicon.ico" rel="icon" type="image/x-icon" />
 <meta name="viewport" content="initial-scale=1.0, user-scalable=yes" />
 <script src="/media/jquery-1.4.4.min.js"></script>
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?libraries=geometry&sensor=false"></script>
 <script src="http://code.jquery.com/jquery-1.5.js"></script>
+<script type="text/javascript" src="/media/tlsearch/throbber.js"></script>
+<script src="/media/lettering.js"></script>
+<script type="text/javascript" src="/media/fancybox/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+<script type="text/javascript" src="/media/fancybox/fancybox/jquery.easing-1.4.pack.js"></script>
+<link rel="stylesheet" href="/media/fancybox/fancybox/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
 <script>
 	var geocoder;
 	var map;
@@ -15,6 +21,7 @@
 	var megaArray = [];
 	var today = new Date();
 	var today_for_api = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+	var emptyImage = '/media/tlsearch/images/empty.png';
 	
 	function initialize () {
 		geocoder = new google.maps.Geocoder();
@@ -50,6 +57,8 @@
 								var COUNTRY_CODE = address[2];
 								var REGION_NAME = address[1];
 								var CITY = address[0];
+								$("#boxLocation2").append("Awesome, you're in "+CITY+"!");
+								$("#boxEvents1").append("Searching for events near you...");
 								tlSearch(COUNTRY_CODE,REGION_NAME,CITY,today_for_api);
 							};
 						};
@@ -68,8 +77,9 @@
 		var tlUrl = 'http://public-api.ticketleap.com/events/by/location/'+COUNTRY_CODE+'/'+REGION_NAME+'/'+CITY;
 		$.getJSON(tlUrl+'?key=5382714350143704&page_size=100&dates_after='+date+'&callback=?', {},
 			function(data) {
-				$("#fsq_results1").append('<h3>Searching '+data.total_count+' events...<div id="performances"></div></h3>');
-				$("#fsq_results1").append('<table cellpadding="0" cellspacing="0" id="results"></table>');
+				$("#boxEvents2").append("Sweet! "+data.total_count+" events found!");
+				$("#boxPerformance1").append("Scouting out event schedule...");
+				$("#fsq_results1").append('<table cellpadding="0" cellspacing="0" id="result_table"></table>');
 				var eventArray = []
 				$.each(data.events, function() {
 					//Get the org slug and event slug from each event in order to do performance search
@@ -96,7 +106,12 @@
 						perfArray.start = this.start_local;
 						perfArray.end = this.end_local;
 						perfArray.desc = data.description.slice(0,100)+'...';
-						perfArray.image = data.image_url_search;
+						//Fill in image if unavailable
+						if (data.image_url_search == null) {
+							perfArray.image = emptyImage;
+						} else {
+							perfArray.image = data.image_url_search;
+						};
 						perfArray.venue = data.venue_name;
 						perfArray.location = data.venue_street+', '+data.venue_city+', '+data.venue_region_name;
 						perfArray.slug = data.slug+'_'+this.slug;
@@ -132,7 +147,7 @@
 	}
 	
 	function showMe() {
-		document.getElementById('performances').innerHTML = 'Found '+megaArray.length+' performances!';
+		$("#boxPerformance2").append(megaArray.length+" killer event times for you!");
 		//Sort Arrays
 		megaArray.sort(function(a,b) {
 			return a.compDate-b.compDate
@@ -140,7 +155,7 @@
 		//Display results
 		for (i in megaArray) {
 			var elName = 'tl_'+megaArray[i].slug;
-			$("<tr>").attr("id",elName).appendTo("#results");
+			$("<tr>").attr("id",elName).appendTo("#result_table");
 			getEventInfo(megaArray[i]);
 		}
 	}
@@ -179,49 +194,93 @@
 		});
 	});
 	
+
+	
+	$(document).ready(function() {
+		$(".fancy_title").lettering();
+		$("a#inline").fancybox({
+			showCloseButton: false,
+			width: 700,
+			height: 245,
+			autoDimensions: false,
+			hideOnOverlayClick: true,
+		});
+		$("#inline").trigger('click');
+	});
+	
+	
+	
 </script>
 </head>
 <body onload="initialize()">
 <div id="header"> 
-	<div class="outsideContainer"> 
-		<ul id="topNav"> 
-			<li><div id='searchbox'>
-				<div name='testform' onsubmit="updateAddress()">
-					<input id="city" type='text' size=25 name='city' value='City' onfocus='ClearCity();'/>
-					<input id="state" type='text' size=25 name='state' value='State' onfocus='ClearState();'/>
-					<input id="country" type='text' size=25 name='country' value='Country' onfocus='ClearCountry();'/>
-					<input type='submit' value='Find Events' onclick="updateAddress()" class="button" />
-				</div>
-			</div><!--end of searchbox--></li>
-	    </ul> 
-	    <a href="http://www.jennystanchak.com/tlsearch" id="logo"><img src="/media/tlsearch/images/logo.png" /></a> 
-	</div> 
-</div>
+	<div class="outsideContainer">
+		<h1 class="fancy_title"><a href="http://www.jennystanchak.com/tlsearch">Ticket Beacon</a></h1> 
+	</div><!-- end outsideContainer-->
+</div><!--end header--> 
 <div style="height: 5px !important;" id="nav"> 
-  <div class="outsideContainer"> 
-  </div> 
-</div>
-<div id='parameters'>
-	<div id="map_canvas">
-		<h3>Search terms</h3>
-		<ul>
-			<li>Location</li>
-			<li>Keyword</li>
-			<li>Timespan</li>
-			<li>Tag</li>
-		</ul>
-		<h3>Sort By</h3>
-		<ul>
-			<li>Time (close, far)</li>
-			<li>Distance (close, far)</li>
-			<li>Amount of social</li>
-			<li>Price (high, low)</li>
-		<ul>
-	</div>
-</div><!--end of parameters-->
-<div class="outsideContainer">
-	<div class='results'>
-		<div id='fsq_results1'></div>
-	</div><!--results-->	     
-</div><!--end of outsideContainer-->
+</div><!--end nav-->
+<div id='page'>
+	<div class="outsideContainer">
+		<div id='parameters'>
+			<div id='searchbox'>
+				<form method="get" action="/search" name="header_find_form" id="header_find_form"> 
+					<p id="search_for"> 
+						<label for="find_desc">Search for <span>(e.g. festivals, theater)</span></label> 
+						<input maxlength="64" name="find_desc" tabindex="1" size="20" id="find_desc" autocomplete="off" value=""> 
+					</p> 
+					<p id="search_near" class="clearfix"> 
+						<label for="dropperText_Mast">Near City or Zip <span>(e.g. San Francisco, CA or 92130)</span></label> 
+
+						<input maxlength="64" name="find_loc" tabindex="2" id="dropperText_Mast" size="14" value="Philadelphia, PA"> 
+					</p> 
+					<a class="button" href="" onclick="this.blur();"><span>Search</span></a>
+
+				</form>
+			</div><!--end searchbox-->
+			<div class="clear"></div>
+	
+			<!--beginning of lightbox controls-->
+			<a style="display:none" id="inline" href="#lightData">This shows the content of element who has id="lightData"</a>
+			<div style="display:none"><div id="lightData">
+				<table>
+					<tr id="boxLocation">
+						<td id="boxLocation1">Zeroing in on your location...</td>
+						<td id="boxLocation2"></td>
+					</tr>
+					<tr id="boxEvents">
+						<td id="boxEvents1"></td>
+						<td id="boxEvents2"></td>
+					</tr>
+					<tr id="boxPerformance">
+						<td id="boxPerformance1"></td>
+						<td id="boxPerformance2"></td>
+					</tr>
+				</table>
+				
+			</div></div><!--end of lightbox controls-->
+			
+			<div style="display:none">
+			<h3>Search terms</h3>
+			<ul>
+				<li>Location</li>
+				<li>Keyword</li>
+				<li>Timespan</li>
+				<li>Tag</li>
+			</ul>
+			<h3>Sort By</h3>
+			<ul>
+				<li>Time (close, far)</li>
+				<li>Distance (close, far)</li>
+				<li>Amount of social</li>
+				<li>Price (high, low)</li>
+				<ul>
+			</div><!--end hidden display-->
+		</div><!--end of parameters-->
+		<div class='results'>
+			<div id='fsq_results1'>
+			</div><!--end fsq_results1-->
+		</div><!--end results-->	     
+	</div><!--end of outsideContainer-->
+</div><!--end page-->
 </body>
