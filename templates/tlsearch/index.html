@@ -22,6 +22,7 @@
 	var today = new Date();
 	var today_for_api = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
 	var emptyImage = '/media/tlsearch/images/empty.png';
+	var numcalls = 0;
 	
 	function initialize () {
 		geocoder = new google.maps.Geocoder();
@@ -77,6 +78,12 @@
 		var tlUrl = 'http://public-api.ticketleap.com/events/by/location/'+COUNTRY_CODE+'/'+REGION_NAME+'/'+CITY;
 		$.getJSON(tlUrl+'?key=5382714350143704&page_size=100&dates_after='+date+'&callback=?', {},
 			function(data) {
+				//Call the api more times if over 100 events
+				numcalls = Math.ceil(data.total_count /  100);
+				if (data.total_count>100) {
+					var callsLeft = numcalls - 1;
+					tlSearch2(COUNTRY_CODE,REGION_NAME,CITY,date,callsLeft);
+				}
 				$("#boxEvents2").append("Sweet! "+data.total_count+" events found!");
 				$("#boxPerformance1").append("Scouting out event schedule...");
 				$("#fsq_results1").append('<table cellpadding="0" cellspacing="0" id="result_table"></table>');
@@ -86,11 +93,29 @@
 					var miniArray = [this.organization_slug, this.slug];
 					eventArray.push(miniArray);
 				});
-				getPerformanceInfo(eventArray);
+				getPerformanceInfo(eventArray,1);
 			});
 	}
 	
-	function getPerformanceInfo(eventArray) {
+	function tlSearch2(COUNTRY_CODE,REGION_NAME,CITY,date,callsLeft) {
+		var tlUrl = 'http://public-api.ticketleap.com/events/by/location/'+COUNTRY_CODE+'/'+REGION_NAME+'/'+CITY;
+		var page = 2;
+		while (page<=callsLeft+1) {
+			var callCount = page;
+			$.getJSON(tlUrl+'?key=5382714350143704&page_num='+page+'&page_size=100&dates_after='+date+'&callback=?', {},
+				function(data) {
+					var eventArray2 = []
+					$.each(data.events, function() {
+						var miniArray2 = [this.organization_slug, this.slug];
+						eventArray2.push(miniArray2);
+					});
+					getPerformanceInfo(eventArray2,callCount);
+				});
+			page +=1;
+		}
+	}
+	
+	function getPerformanceInfo(eventArray,callCount) {
 		var lastOne = eventArray[eventArray.length-1];
 		var lastSlug = lastOne[1];
 		$.each(eventArray, function() {
@@ -120,11 +145,13 @@
 						var compDate = Date.parse(this.start_local);
 						perfArray.compDate = compDate;
 						megaArray.push(perfArray);
-						//if the event is the last in the array, and last performance, display the results
+						//if the event is the last in the array, and last performance, and the last call, display the results
 						if (data.slug == lastSlug) {
 							var lastPerf = data.performances[data.performances.length-1];
 							if (this.slug == lastPerf.slug) {
-								showMe();
+								if (callCount == numcalls) {
+									showMe();
+								}
 							}
 						}
 					});
@@ -194,8 +221,6 @@
 		});
 	});
 	
-
-	
 	$(document).ready(function() {
 		$(".fancy_title").lettering();
 		$("a#inline").fancybox({
@@ -239,7 +264,8 @@
 				</form>
 			</div><!--end searchbox-->
 			<div class="clear"></div>
-	
+			<div id="resultControls">
+			</div><!--end resultControls-->
 			<!--beginning of lightbox controls-->
 			<a style="display:none" id="inline" href="#lightData">This shows the content of element who has id="lightData"</a>
 			<div style="display:none"><div id="lightData">
