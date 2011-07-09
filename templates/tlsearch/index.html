@@ -108,7 +108,7 @@
 	
 	function tlSearch(COUNTRY_CODE,REGION_NAME,CITY,date) {
 		var tlUrl = 'http://public-api.ticketleap.com/events/by/location/'+COUNTRY_CODE+'/'+REGION_NAME+'/'+CITY;
-		$.getJSON(tlUrl+'?key=5382714350143704&page_size=100&dates_after='+date+'&callback=?', {},
+		$.getJSON(tlUrl+'?key=7735287934996432&page_size=100&dates_after='+date+'&callback=?', {},
 			function(data) {
 				//Call the api more times if over 100 events
 				numcalls = Math.ceil(data.total_count /  100);
