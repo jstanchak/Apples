@@ -39,7 +39,7 @@ a:visited{color:#551a8b;}
 .outsideContainer {
 	margin-left: auto;
 	margin-right: auto;
-	width: 80%;
+	width: 1000px;
 	position: relative;
 }
 
@@ -102,25 +102,46 @@ a.button:active span {
   height:38px;
   -webkit-text-stroke: 1px transparent;
 }
-
-#header_find_form{margin:9px 0 14px 10px;height:56px;width:720px;overflow:hidden;float:left;position:relative;}
+#searchbox{float:left;display:inline;}
+#header_find_form{margin:9px 0 20px 0px;height:56px;width:1000px;overflow:hidden;float:left;position:relative;}
 #header_find_form p{float:left;margin:7px 10px 0 0;text-align:left;}
-#header_find_form p#search_near{margin-right:0;}
-#header_find_form input{width:300px;height:22px;padding:3px 0 1px 5px;font-size:17px;color:#333;border:1px solid #ccc;background:url(//media3.px.yelpcdn.com/static/201012163545511154/i/gfx/header_sprite.png) no-repeat 0 -152px;}
+#header_find_form p#search_near{margin-right:0; margin-left:23px;}
+#header_find_form input{width:400px;height:22px;padding:3px 0 0px 5px;font-size:17px;color:#333;border:1px solid #ccc;background:url(//media3.px.yelpcdn.com/static/201012163545511154/i/gfx/header_sprite.png) no-repeat 0 -152px;}
 #header_find_form input:active{border-color:#888;outline:0;}
-#header_find_form #search_near input{float:left;width:290px;}
+#header_find_form #search_near input{float:left;width:400px;}
 #header_find_form .ybtn{position:absolute;top:70px;right:10px;}
 label span{color:#666;font-size:11px;font-style:normal;font-weight:normal;}
 label{color:#1d87b8;display:block;font-weight:bold;margin-bottom:2px;}
 
 button{font-family:arial,'Lucida Grande','Bitstream Vera Sans',verdana,sans-serif;font-size:12px;}
 
-.resultNum {font-size:17px;}
+.resultNum {font-size:17px;margin-bottom:0px; font-weight:bold;}
 #searchTerm, #searchLocation, #eventCount {display:inline;}
 .sort, .pagination{color:#1d87b8;display:block;font-weight:bold;margin-bottom:2px;font-size:11px;}
 .sort span, .pagination span, .pages{color:#666;font-size:11px;font-style:normal;font-weight:normal;}
 .pages {float:right;display:inline;}
 .pagination{float:left; display:inline;}
+.sort {float:left;display:inline; width:438px;}
+
+div.results
+{
+float:left;
+width:650px;
+margin:0;
+border-right:1px solid #ccc;
+padding-right:10px;
+}
+div.maps_tags
+{
+padding:1em;
+padding-right:0;
+padding-top:3px;
+margin-left:660px;
+}
+
+#tags {height:300px; font-size:9px; text-align:justify;}
+
+#map_canvas {height:300px; width:300px; padding-left: 1em; background-color:#4DB8E0;}
 
 #lightData table{
 	position:absolute;
@@ -144,7 +165,7 @@ button{font-family:arial,'Lucida Grande','Bitstream Vera Sans',verdana,sans-seri
 
 #result_table {color:#646464;font-size:11px;display:block;}
 
-#result_table h3 a{color:#1d87b8;font-size:14px;display:block;margin:0 0 4px;text-decoration:none;}
+#result_table h3 a{color:#1d87b8;font-size:14px;display:block;margin:0 0 0px;text-decoration:none;}
 #result_table a{font-size:11px;position:relative;left:1px;text-decoration:none;}
 
 #result_table #desc{font-size:12px;}

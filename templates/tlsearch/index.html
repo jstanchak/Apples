@@ -23,9 +23,17 @@
 	var today_for_api = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
 	var emptyImage = '/media/tlsearch/images/empty.png';
 	var numcalls = 0;
+	var markersArray = [];
+	var infowindow;
+	var tagArray = [];
 	
 	function initialize () {
 		geocoder = new google.maps.Geocoder();
+		var myOptions = {
+			zoom: 12,
+			mapTypeId: google.maps.MapTypeId.ROADMAP
+		};
+		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
 		
 		// Detect location, then alert to tell location
 		if (navigator.geolocation) {
@@ -33,6 +41,7 @@
 			navigator.geolocation.getCurrentPosition(function(position) {
 				//alert('your location is '+position.coords.latitude+', '+position.coords.longitude);
 				initialLocation = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+				map.setCenter(initialLocation);
 				codeLatLng(initialLocation);
 			}, function() {
 				alert("Geolocation not supported.  We've stuck you on the Empire State Building.")
@@ -40,38 +49,6 @@
 				codeLatlng(initialLocation);
 			});
 		};
-	}
-	
-	function fetch() {
-		document.getElementById("resultControls").style.display = "none";
-		//Ready the loading box
-		document.getElementById("boxLocation2").innerHTML = "";
-		document.getElementById("boxEvents1").innerHTML = "";
-		document.getElementById("boxEvents2").innerHTML = "";
-		document.getElementById("boxPerformance1").innerHTML = "";
-		document.getElementById("boxPerformance2").innerHTML = "";
-		$("#inline").trigger('click');
-		
-		megaArray = [];
-		document.getElementById("fsq_results1").innerHTML = "";
-		var address = document.getElementById("find_loc").value;
-		geocoder.geocode({'address': address}, function(results, status) {
-			if (status== google.maps.GeocoderStatus.OK) {
-				if(results[0]) {
-					var addy = results[0].formatted_address.split(", ");
-					var state = addy[1].split(" ");
-					var COUNTRY_CODE = addy[2];
-					var REGION_NAME = state[0];
-					var CITY = addy[0];
-					$("#boxLocation2").append("Awesome, you're in "+CITY+"!");
-					document.getElementById("searchLocation").innerHTML = " in "+CITY;
-					$("#boxEvents1").append("Searching for events near you...");
-					tlSearch(COUNTRY_CODE, REGION_NAME, CITY, today_for_api);
-				};
-			} else {
-				alert("Geocoder failed due to: "+status);
-			}
-		});
 	}
 	
 	function codeLatLng(latlng) {
@@ -147,6 +124,44 @@
 		}
 	}
 	
+	function fetch() {
+		document.getElementById("resultControls").style.display = "none";
+		document.getElementById("maps_tags").style.display = "none";
+		//Ready the loading box
+		document.getElementById("boxLocation2").innerHTML = "";
+		document.getElementById("boxEvents1").innerHTML = "";
+		document.getElementById("boxEvents2").innerHTML = "";
+		document.getElementById("boxPerformance1").innerHTML = "";
+		document.getElementById("boxPerformance2").innerHTML = "";
+		$("#inline").trigger('click');
+		deleteMarkers();
+		megaArray = [];
+		tagArray=[];
+		document.getElementById("fsq_results1").innerHTML = "";
+		var address = document.getElementById("find_loc").value;
+		geocoder.geocode({'address': address}, function(results, status) {
+			if (status== google.maps.GeocoderStatus.OK) {
+				if(results[0]) {
+					var lat = results[0].geometry.location.lat();
+					var lng = results[0].geometry.location.lng();
+					var latlng = new google.maps.LatLng(lat, lng);
+					map.setCenter(latlng);
+					var addy = results[0].formatted_address.split(", ");
+					var state = addy[1].split(" ");
+					var COUNTRY_CODE = addy[2];
+					var REGION_NAME = state[0];
+					var CITY = addy[0];
+					$("#boxLocation2").append("Awesome, you're in "+CITY+"!");
+					document.getElementById("searchLocation").innerHTML = " in "+CITY;
+					$("#boxEvents1").append("Searching for events near you...");
+					tlSearch(COUNTRY_CODE, REGION_NAME, CITY, today_for_api);
+				};
+			} else {
+				alert("Geocoder failed due to: "+status);
+			}
+		});
+	}
+	
 	function getPerformanceInfo(eventArray,callCount) {
 		var lastOne = eventArray[eventArray.length-1];
 		var lastSlug = lastOne[1];
@@ -162,7 +177,12 @@
 						perfArray.url = this.url;
 						perfArray.start = this.start_local;
 						perfArray.end = this.end_local;
-						perfArray.desc = data.description.slice(0,100)+'...';
+						//Shorten description
+						if (data.description.length >100) {
+							perfArray.desc = data.description.slice(0,100)+'...';
+						} else {
+							perfArray.desc = data.description;
+						};
 						//Fill in image if unavailable
 						if (data.image_url_search == null) {
 							perfArray.image = emptyImage;
@@ -171,18 +191,28 @@
 						};
 						perfArray.venue = data.venue_name;
 						perfArray.location = data.venue_street+', '+data.venue_city+', '+data.venue_region_name;
+
 						perfArray.slug = data.slug+'_'+this.slug;
-						perfArray.orgslug = data.organization_slug
+						perfArray.orgslug = data.organization_slug;
+						var tags = [];
+						//Get tag info
+						for (i in data.tags) {
+							tagArray.push(data.tags[i].name);
+							tags.push(data.tags[i].name);
+						};
+						perfArray.tags = tags;
+												
 						//Get sortable date
 						var compDate = Date.parse(this.start_local);
 						perfArray.compDate = compDate;
 						megaArray.push(perfArray);
+
 						//if the event is the last in the array, and last performance, and the last call, display the results
 						if (data.slug == lastSlug) {
 							var lastPerf = data.performances[data.performances.length-1];
 							if (this.slug == lastPerf.slug) {
 								if (callCount == numcalls) {
-									showMe();
+									showMe(20);
 								}
 							}
 						}
@@ -190,7 +220,108 @@
 				})
 		})
 	}
-	
+
+
+	function tagHandler() {
+		//compute frequencies of each tag
+		var frequency = {}, value;
+		for (var i=0; i<tagArray.length; i++) {
+			value = tagArray[i];
+			if(value in frequency) {
+				frequency[value]++;
+			}
+			else {
+				frequency[value] = 1;
+			}
+		};
+		
+		//make array from the frequency object
+		var uniques = [];
+		for (value in frequency) {
+			uniques.push(value);
+		};
+		
+		//Display tags
+		uniques.sort();
+		document.getElementById("tags").innerHTML = "";
+		//Determine tag size
+		if (uniques.length > 300) {
+			var freqLimit = 7;
+			var addNum = 6;
+			var multy = 3;
+		}
+		else {
+			if (uniques.length < 100) {
+				var freqLimit = 1;
+				var addNum = 5;
+				var multy = 4;
+			} 
+			else {
+				var freqLimit = 4;
+				var addNum = 6;
+				var multy = 3;
+			}
+		};
+
+		for (i in uniques) {
+			if (frequency[uniques[i]]>=freqLimit) {
+				var size = Math.ceil(frequency[uniques[i]] / 10)*multy + addNum;
+				if (size > 27) {
+					size = 27;
+				};
+				$("#tags").append('<a class = "'+size+'">'+uniques[i]+'</a>  ');
+			};
+		};
+		
+		document.getElementsByClass = function(class){
+		   var itemsfound = new Array;
+		   var elements = document.getElementsByTagName('*');
+		   for(var i=0;i<elements.length;i++){
+		      if(elements[i].className == class){
+		         itemsfound.push(elements[i]);
+		      }
+		   }
+		   return itemsfound;
+		};
+		//change font-size for tag cloud
+		var fSize = 9;
+		while (fSize <= 27) {
+			for(i in document.getElementsByClass(fSize)) {
+				 document.getElementsByClass(fSize)[i].style.fontSize = fSize+'px';
+			};
+			fSize += 1
+		};
+	}
+
+	function showMe(eventNum) {
+		$("#boxPerformance2").append(megaArray.length+" killer event times for you!");
+		document.getElementById("eventCount").innerHTML = megaArray.length;
+		document.getElementById("resultControls").style.display = "";
+		document.getElementById("maps_tags").style.display = "";
+		
+		//Display tags
+		tagHandler();
+		
+		//Sort Arrays
+		megaArray.sort(function(a,b) {
+			return a.compDate-b.compDate
+		});
+		//Display results
+		var counter = 0;
+		for (i in megaArray) {
+			if (counter <= eventNum) {
+				var date1 = new Date(megaArray[i].start);
+				if (date1 >= today) {
+					var elName = 'tl_'+megaArray[i].slug;
+					$("<tr>").attr("id",elName).appendTo("#result_table");
+					getEventInfo(megaArray[i]);
+					getLocation(megaArray[i], eventNum, counter);
+					counter += 1;
+				};	
+			};
+		};
+	}
+
 	function getEventInfo(info) {
 		var date1 = new Date(info.start);
 		if (date1 >=today) {
@@ -204,34 +335,63 @@
 				+'<p id="desc">'+info.desc+'</p></td></tr>');
 		};	
 	}
-	
-	function showMe() {
-		$("#boxPerformance2").append(megaArray.length+" killer event times for you!");
-		document.getElementById("eventCount").innerHTML = megaArray.length;
-		document.getElementById("resultControls").style.display = "";
-		//Sort Arrays
-		megaArray.sort(function(a,b) {
-			return a.compDate-b.compDate
-		});
-		//Display results
-		for (i in megaArray) {
-			var elName = 'tl_'+megaArray[i].slug;
-			$("<tr>").attr("id",elName).appendTo("#result_table");
-			getEventInfo(megaArray[i]);
+
+	function getLocation(info, displayNum, perfNum) {
+		if (info.latlng) {
+			addVMarker(info, info.latlng);
+		} else {
+			geocoder.geocode({'address': info.location}, function(results, status) {
+				if (status== google.maps.GeocoderStatus.OK) {
+					if(results[0]) {
+						var lat = results[0].geometry.location.lat();
+						var lng = results[0].geometry.location.lng();
+						var latlng = new google.maps.LatLng(lat, lng);
+						info.latlng = latlng;
+						addVMarker(info, latlng);
+					} else {}
+				} else {}
+			});
 		}
 	}
 	
-  	function codeAddress() {
-    	var CITY = document.getElementById("city").value;
-		var REGION_NAME = document.getElementById("state").value;
-		var COUNTRY_CODE = document.getElementById("country").value;
-		megaArray = [];
-    	tlSearch(COUNTRY_CODE,REGION_NAME,CITY,'2011-07-05');
+	function addVMarker(info, Vlatlng) {
+		tString = info.name;
+		var contentStr = '<div class="box_title"><b>'+info.name+'</b></div><br /><div class="box_content">';
+		contentStr += '</div>';
+		vMarker = new google.maps.Marker({
+			position: Vlatlng,
+			map: map,
+			draggable: false,
+			title: tString,
+			html: contentStr,
+		});
+		markersArray.push(vMarker);
+		infowindow = new google.maps.InfoWindow({
+			maxWidth: 330,
+		});
+		google.maps.event.addListener(vMarker, 'mouseover', function() {
+			infowindow.setContent(this.html);
+			infowindow.open(map, this);
+		});
+	}
+	
+	function deleteMarkers() {
+		if (markersArray) {
+			for (i in markersArray) {
+				markersArray[i].setMap(null);
+			}
+			markersArray.length = 0;
+		}
+	}
+	
+	function resultSort(eventNum) {
+		document.getElementById("result_table").innerHTML = "";
+		deleteMarkers();
+		showMe(eventNum);
 	}
 	
 	function updateAddress() {
-		document.getElementById('fsq_results1').innerHTML = '';
-		codeAddress();
+		fetch();
 	}
 	
 	function ClearCity() {
@@ -275,6 +435,7 @@
 <div id="header"> 
 	<div class="outsideContainer">
 		<h1 class="fancy_title"><a href="http://www.jennystanchak.com/tlsearch">Ticket Beacon</a></h1> 
+
 	</div><!-- end outsideContainer-->
 </div><!--end header--> 
 <div style="height: 5px !important;" id="nav"> 
@@ -292,7 +453,7 @@
 						<label for="dropperText_Mast">Near City or Zip <span>(e.g. San Francisco, CA or 92130)</span></label> 
 						<input maxlength="64" name="find_loc" tabindex="2" id="find_loc" size="14" value="Philadelphia, PA"> 
 					</p> 
-					<a class="button" style="position:absolute;top:28px" onclick="this.blur(); fetch()"><span>Search</span></a>
+					<a class="button" style="position:absolute;top:28px;float:left; width:85px; text-align:center" onclick="this.blur(); fetch()"><span>Search</span></a>
 
 				</form>
 			</div><!--end searchbox-->
@@ -300,9 +461,11 @@
 			
 			<div id="resultControls" style="display:none">
 				<div class="resultNum"><div id="eventCount">10,000,000</div> event times<div id="searchTerm"> for taco</div><div id="searchLocation"> in Philadelphia</div></div>
+				<hr style="color:#ccc;background-color:#ccc;height:1px;border:none;" />
+				<div class="pages"><span id="previous">prev </span>1 2 3 4 5 6<span id="next"> next</span></div>				
 				<div class="sort">Sort: <span><a>Date/Time</a> | <a>Social Activity</a> | <a>Distance</a></span></div>
-				<div class="pagination">Show: <span><a>10</a> | <a>20</a> | <a>50</a></span></div>
-				<div class="pages"><span id="previous">prev </span>1 2 3 4 5 6<span id="next"> next</span></div>
+				<div class="pagination">Show: <span><a onclick="resultSort(10)">10</a> | <a onclick="resultSort(20)">20</a> | <a onclick="resultSort(50)">50</a></span></div>
+
 				<div class="clear"></div>
 			</div><!--end resultControls-->
 			
@@ -326,27 +489,18 @@
 				
 			</div></div><!--end of lightbox controls-->
 			
-			<div style="display:none">
-			<h3>Search terms</h3>
-			<ul>
-				<li>Location</li>
-				<li>Keyword</li>
-				<li>Timespan</li>
-				<li>Tag</li>
-			</ul>
-			<h3>Sort By</h3>
-			<ul>
-				<li>Time (close, far)</li>
-				<li>Distance (close, far)</li>
-				<li>Amount of social</li>
-				<li>Price (high, low)</li>
-				<ul>
-			</div><!--end hidden display-->
 		</div><!--end of parameters-->
 		<div class='results'>
 			<div id='fsq_results1'>
 			</div><!--end fsq_results1-->
-		</div><!--end results-->	     
+		</div><!--end results-->	
+		<div style="display:none" class='maps_tags' id='maps_tags'>
+			<div id='tags'>
+				Here are some tags tags tags tags tags tags tags tags tags tags tags tags tags tags tags tags tags tags tags
+			</div><!--end tags-->
+		</div><!--end maps_tags-->   
+		<div id='map_canvas'>
+		</div><!--end map_canvas-->  
 	</div><!--end of outsideContainer-->
 </div><!--end page-->
 </body>
