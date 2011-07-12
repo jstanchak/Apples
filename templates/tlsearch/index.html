@@ -316,7 +316,6 @@
 		//Display tags
 		tagHandler();
 		
-		alert('now there are only '+megaArrayDated.length+' things in the array');
 		//Display results
 		$("#boxPerformance2").append(megaArrayDated.length+" killer event times for you!");
 		document.getElementById("eventCount").innerHTML = megaArrayDated.length;
@@ -333,7 +332,6 @@
 		var counter = 0;
 		var startNum = (pageNum - 1)*numPerPage;
 		var endNum = startNum + numPerPage;
-		alert('start at '+startNum+' and end at '+endNum);
 		for (var i=startNum;i<endNum;i++) {
 			var elName = 'tl_'+megaArrayDated[i].slug;
 			$("<tr>").attr("id",elName).appendTo("#result_table");
@@ -344,7 +342,6 @@
 
 	function createPages(numPerPage) {
 		totalNumPages = Math.ceil(megaArrayDated.length / numPerPage);
-		alert('total pages to create is '+totalNumPages);
 		document.getElementById("pNums").innerHTML = "";
 		for (var i=1;i<=totalNumPages;i++) {
 			$('#pNums').append('<a onclick="getPage('+i+','+totalNumPages+','+numPerPage+')">'+i+'</a> ');
