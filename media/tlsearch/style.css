@@ -117,11 +117,14 @@ button{font-family:arial,'Lucida Grande','Bitstream Vera Sans',verdana,sans-seri
 
 .resultNum {font-size:17px;margin-bottom:0px; font-weight:bold;}
 #searchTerm, #searchLocation, #eventCount {display:inline;}
-.sort, .pagination{color:#1d87b8;display:block;font-weight:bold;margin-bottom:2px;font-size:11px;}
-.sort span, .pagination span, .pages{color:#666;font-size:11px;font-style:normal;font-weight:normal;}
+.sort, .pagination, .pages{color:#1d87b8;display:block;font-weight:bold;margin-bottom:2px;font-size:11px;}
+.sort span, .pagination span, .pages span{color:#666;font-size:11px;font-style:normal;font-weight:normal;}
 .pages {float:right;display:inline;}
 .pagination{float:left; display:inline;}
 .sort {float:left;display:inline; width:438px;}
+.pNums {display:inline;}
+.pNums a:link;{display:block, background-color:blue; width:70px;text-align:center;text-decoration:none;}
+
 
 div.results
 {
