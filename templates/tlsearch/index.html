@@ -369,11 +369,11 @@
 
 	function getEventInfo(info) {
 			var elName = 'tl_'+info.slug;
-			$('#'+elName).append('<td class="image" style="width:8em"><a href="'+info.url+'"> <img src='+info.image+' /></a></td>'
-				+'<td><h3><a href="'+info.url+'">'+info.name+'</a></h3>'
+			$('#'+elName).append('<td class="image" style="width:8em"><a target="_blank" href="'+info.url+'"> <img src='+info.image+' /></a></td>'
+				+'<td><h3><a target="_blank" href="'+info.url+'">'+info.name+'</a></h3>'
 				+'<table cellpadding="0" cellspacing="0"><tr class="meta">'
 				+'<td class="first" width="350em"><strong>'+info.start+' to '+info.end+'</strong><br />'
-				+'Organized by <a href="http://'+info.orgslug+'.ticketleap.com">'+info.organization+'</a></td>'
+				+'Organized by <a target="_blank" href="http://'+info.orgslug+'.ticketleap.com">'+info.organization+'</a></td>'
 				+'<td><strong>'+info.venue+'</strong><br/>'+info.location+'</td></tr></table>'
 				+'<p id="desc">'+info.desc+'</p></td></tr>');
 	}
