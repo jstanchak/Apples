@@ -454,7 +454,6 @@
 	
 	function searchByTag(searchTag) {
 		specificResults = [];
-		alert(searchTag);
 		for (i in megaArrayDated) {
 			for (h in megaArrayDated[i].tags) {
 				if (searchTag == megaArrayDated[i].tags[h]) {
@@ -462,7 +461,6 @@
 				};
 			};
 		};
-		alert(specificResults.length+' results');
 		activeArray = specificResults;
 		document.getElementById("result_table").innerHTML = "";
 		document.getElementById("eventCount").innerHTML = activeArray.length;
