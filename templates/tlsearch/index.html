@@ -27,6 +27,8 @@
 	var markersArray = [];
 	var infowindow;
 	var tagArray = [];
+	var specificResults = [];
+	var activeArray;
 	
 	function initialize () {
 		geocoder = new google.maps.Geocoder();
@@ -268,16 +270,26 @@
 				var multy = 4;
 			}
 		};
-
+		
 		for (i in uniques) {
 			if (frequency[uniques[i]]>=freqLimit) {
 				var size = Math.ceil(frequency[uniques[i]] / 5)*multy + addNum;
 				if (size > 27) {
 					size = 27;
 				};
-				$("#tags").append('<a class = "'+size+'">'+uniques[i]+'</a>  ');
+				$("#tags").append('<a href="#" id="'+uniques[i]+'" class= "'+size+'">'+uniques[i]+'</a>  ');
 			};
 		};
+		
+		//Assign onclick action
+		aObj = document.getElementById('tags').getElementsByTagName('a');
+		for(var i=0;i<aObj.length;i++) {
+			var searchTag = aObj[i].innerHTML;
+			var term = searchTag;
+	    	aObj[i].onclick = function(){
+				searchByTag(this.id);
+			};
+	  	}; 
 		
 		document.getElementsByClass = function(class){
 		   var itemsfound = new Array;
@@ -312,13 +324,14 @@
 				megaArrayDated.push(megaArray[i]);
 			};
 		};
+		activeArray = megaArrayDated;
 		
 		//Display tags
 		tagHandler();
 		
 		//Display results
-		$("#boxPerformance2").append(megaArrayDated.length+" killer event times for you!");
-		document.getElementById("eventCount").innerHTML = megaArrayDated.length;
+		$("#boxPerformance2").append(activeArray.length+" killer event times for you!");
+		document.getElementById("eventCount").innerHTML = activeArray.length;
 		document.getElementById("resultControls").style.display = "";
 		document.getElementById("maps_tags").style.display = "";
 		displayPages(eventNum,1);
@@ -331,27 +344,33 @@
 		};
 		var counter = 0;
 		var startNum = (pageNum - 1)*numPerPage;
-		var endNum = startNum + numPerPage;
+		var endNum = Math.min(startNum + numPerPage,activeArray.length);
 		for (var i=startNum;i<endNum;i++) {
-			var elName = 'tl_'+megaArrayDated[i].slug;
+			var elName = 'tl_'+activeArray[i].slug;
 			$("<tr>").attr("id",elName).appendTo("#result_table");
-			getEventInfo(megaArrayDated[i]);
-			getLocation(megaArrayDated[i]);
+			getEventInfo(activeArray[i]);
+			getLocation(activeArray[i]);
 		};
 	}
 
 	function createPages(numPerPage) {
-		totalNumPages = Math.ceil(megaArrayDated.length / numPerPage);
+		totalNumPages = Math.ceil(activeArray.length / numPerPage);
+		if (totalNumPages == 1){
+			document.getElementById("previous").innerHTML = "";
+			document.getElementById("next").innerHTML = "";
+		}
 		document.getElementById("pNums").innerHTML = "";
 		for (var i=1;i<=totalNumPages;i++) {
-			$('#pNums').append('<a onclick="getPage('+i+','+totalNumPages+','+numPerPage+')">'+i+'</a> ');
-		}
+			$('#pNums').append('<a href="#" onclick="getPage('+i+','+totalNumPages+','+numPerPage+')">'+i+'</a> ');
+		};
+		activateLink(1);
 	}
 	
 	function getPage(pageNum,totalNumPages,numPerPage) {
+		activateLink(pageNum);
 		//create previous and next if needed
 		if (pageNum > 1){
-			document.getElementById("previous").innerHTML = "<a>prev</a> ";
+			document.getElementById("previous").innerHTML = "<a href='#'>prev</a> ";
 		}
 		else {
 			document.getElementById("previous").innerHTML = "";
@@ -360,7 +379,7 @@
 			document.getElementById("next").innerHTML = "";
 		}
 		else {
-			document.getElementById("next").innerHTML = " <a>next</a>";
+			document.getElementById("next").innerHTML = " <a href='#'>next</a>";
 		};
 		//display pertinent results
 		document.getElementById('result_table').innerHTML = "";
@@ -433,6 +452,26 @@
 		createPages(eventNum);
 	}
 	
+	function searchByTag(searchTag) {
+		specificResults = [];
+		alert(searchTag);
+		for (i in megaArrayDated) {
+			for (h in megaArrayDated[i].tags) {
+				if (searchTag == megaArrayDated[i].tags[h]) {
+					specificResults.push(megaArrayDated[i]);
+				};
+			};
+		};
+		alert(specificResults.length+' results');
+		activeArray = specificResults;
+		document.getElementById("result_table").innerHTML = "";
+		document.getElementById("eventCount").innerHTML = activeArray.length;
+		document.getElementById("searchTag").innerHTML = " with tag "+searchTag;
+		deleteMarkers();
+		displayPages(20,1);
+		createPages(20);
+	}
+	
 	function updateAddress() {
 		fetch();
 	}
@@ -470,6 +509,17 @@
 		$("#inline").trigger('click');
 	});
 	
+	function activateLink(pageNum) {
+	  	aObj = document.getElementById('pNums').getElementsByTagName('a');
+		for(i=0;i<aObj.length;i++) {
+	    	if(i == pageNum-1) {
+	      		aObj[i].className='active';
+	    	} 
+			else {
+				aObj[i].className='';
+			}
+	  	}
+	}
 	
 	
 </script>
@@ -503,11 +553,11 @@
 			<div class="clear"></div>
 			
 			<div id="resultControls" style="display:none">
-				<div class="resultNum"><div id="eventCount">10,000,000</div> event times<div id="searchTerm"> for taco</div><div id="searchLocation"> in Philadelphia</div></div>
+				<div class="resultNum"><div id="eventCount">10,000,000</div> event times<div id="searchTerm"> for taco</div><div id="searchLocation"> in Philadelphia</div><div id="searchTag"></div></div>
 				<hr style="color:#ccc;background-color:#ccc;height:1px;border:none;" />
-				<div class="pages"><span id="previous"></span><div class="pNums" id="pNums"><a>1</a> <a>2</a> <a>3</a> 4 5 6</div><span id="next"> next</span></div>				
-				<div class="sort">Sort: <span><a>Date/Time</a> | <a>Social Activity</a> | <a>Distance</a></span></div>
-				<div class="pagination">Show: <span><a onclick="resultSort(10)">10</a> | <a onclick="resultSort(20)">20</a> | <a onclick="resultSort(50)">50</a></span></div>
+				<div class="pages"><span id="previous"></span><div class="pNums" id="pNums"><a>1</a> <a>2</a> <a>3</a> 4 5 6</div><span id="next"> <a href="#">next</a></span></div>				
+				<div class="sort">Sort: <span><a href="#">Date/Time</a> | <a href="#">Social Activity</a> | <a href="#">Distance</a></span></div>
+				<div class="pagination">Show: <span><a href="#" onclick="resultSort(10)">10</a> | <a href="#" onclick="resultSort(20)">20</a> | <a href="#" onclick="resultSort(50)">50</a></span></div>
 
 				<div class="clear"></div>
 			</div><!--end resultControls-->
