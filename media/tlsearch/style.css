@@ -115,10 +115,16 @@ label{color:#1d87b8;display:block;font-weight:bold;margin-bottom:2px;}
 
 button{font-family:arial,'Lucida Grande','Bitstream Vera Sans',verdana,sans-serif;font-size:12px;}
 
+#zipInput {margin-left:15px;}
+#zipInput input{width:200px;height:22px;padding:3px 0 0px 5px;font-size:17px;color:#333;border:1px solid #ccc;background:url(//media3.px.yelpcdn.com/static/201012163545511154/i/gfx/header_sprite.png) no-repeat 0 -152px;}
+#zipInput input:active{border-color:#888;outline:0;}
+#zipInput input{float:left;width:200px;}
+
 .resultNum {font-size:17px;margin-bottom:0px; font-weight:bold;}
 #searchTerm, #searchLocation, #eventCount, #searchTag{display:inline;}
-.sort, .pagination, .pages{color:#1d87b8;display:block;font-weight:bold;margin-bottom:2px;font-size:11px;}
-.sort span a, .pagination span a, .pages span a{color:#666;font-size:11px;font-style:normal;font-weight:normal;text-decoration:none;}
+#searchTag a, #searchTerm a{color:#1d87b8;font-size:8px;position:relative;top:-7px;text-decoration:none;}
+.sort, .pagination, .pages{color:#1d87b8;display:block;font-weight:bold;margin-bottom:2px;font-size:12px;}
+.sort span a, .pagination span a, .pages span a{color:#666;font-size:12px;font-style:normal;font-weight:normal;text-decoration:none;}
 .pages {float:right;display:inline;}
 .pagination{float:left; display:inline;}
 .sort {float:left;display:inline; width:438px;}
@@ -149,7 +155,7 @@ margin-left:660px;
 }
 #tags {text-align:justify;}
 #tags a{height:300px; font-size:9px; text-align:justify; text-decoration:none;color:#666;}
-#tags a:hover{color:#1d87b8;font-weight:bold;}
+#tags a:hover{color:#1d87b8;}
 
 #map_canvas {height:300px; width:300px; padding-left: 1em; background-color:#4DB8E0;}
 

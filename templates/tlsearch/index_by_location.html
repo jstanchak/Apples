@@ -29,7 +29,6 @@
 	var tagArray = [];
 	var specificResults = [];
 	var activeArray;
-	var newLocation = 0;
 	
 	function initialize () {
 		geocoder = new google.maps.Geocoder();
@@ -128,63 +127,43 @@
 		}
 	}
 	
-	function fetch(num) {
+	function fetch() {
+		document.getElementById("resultControls").style.display = "none";
+		document.getElementById("maps_tags").style.display = "none";
 		//Ready the loading box
 		document.getElementById("boxLocation2").innerHTML = "";
 		document.getElementById("boxEvents1").innerHTML = "";
 		document.getElementById("boxEvents2").innerHTML = "";
 		document.getElementById("boxPerformance1").innerHTML = "";
 		document.getElementById("boxPerformance2").innerHTML = "";
-		//if just searching, just search, then show events, if not, do the whole damn thing.
-		if (num == 2 && newLocation == 0) {
-			activeArray = megaArrayDated;
-			searchResults();
-			document.getElementById("result_table").innerHTML = "";
-			document.getElementById("searchTag").innerHTML = "";
-			deleteMarkers();
-			displayPages(20,1);
-			createPages(20);
-		}
-		else if (newLocation == 1 || num == 1) {
-			newLocation = 0;
-			document.getElementById("resultControls").style.display = "none";
-			document.getElementById("maps_tags").style.display = "none";
-			deleteMarkers();
-			$("#inline").trigger('click');
-			megaArray = [];
-			megaArrayDated = [];
-			tagArray=[];
-			document.getElementById("fsq_results1").innerHTML = "";
-			//if first fetch, look in first field, if second fetch, look in second field
-			if (num == 1) {
-				var address = document.getElementById("first_loc").value;
+		$("#inline").trigger('click');
+		deleteMarkers();
+		megaArray = [];
+		megaArrayDated = [];
+		tagArray=[];
+		document.getElementById("fsq_results1").innerHTML = "";
+		var address = document.getElementById("find_loc").value;
+		geocoder.geocode({'address': address}, function(results, status) {
+			if (status== google.maps.GeocoderStatus.OK) {
+				if(results[0]) {
+					var lat = results[0].geometry.location.lat();
+					var lng = results[0].geometry.location.lng();
+					var latlng = new google.maps.LatLng(lat, lng);
+					map.setCenter(latlng);
+					var addy = results[0].formatted_address.split(", ");
+					var state = addy[1].split(" ");
+					var COUNTRY_CODE = addy[2];
+					var REGION_NAME = state[0];
+					var CITY = addy[0];
+					$("#boxLocation2").append("Awesome, you're in "+CITY+"!");
+					document.getElementById("searchLocation").innerHTML = " in "+CITY;
+					$("#boxEvents1").append("Searching for events near you...");
+					tlSearch(COUNTRY_CODE, REGION_NAME, CITY, today_for_api);
+				};
+			} else {
+				alert("Geocoder failed due to: "+status);
 			}
-			else {
-				var address = document.getElementById("find_loc").value;
-			};
-			geocoder.geocode({'address': address}, function(results, status) {
-				if (status== google.maps.GeocoderStatus.OK) {
-					if(results[0]) {
-						var lat = results[0].geometry.location.lat();
-						var lng = results[0].geometry.location.lng();
-						var latlng = new google.maps.LatLng(lat, lng);
-						map.setCenter(latlng);
-						var addy = results[0].formatted_address.split(", ");
-						var state = addy[1].split(" ");
-						var COUNTRY_CODE = addy[2];
-						var REGION_NAME = state[0];
-						var CITY = addy[0];
-						$("#boxLocation2").append("Awesome, you're in "+CITY+"!");
-						document.getElementById("searchLocation").innerHTML = " in "+CITY;
-						document.getElementById("find_loc").value = CITY+', '+REGION_NAME;
-						$("#boxEvents1").append("Searching for events near you...");
-						tlSearch(COUNTRY_CODE, REGION_NAME, CITY, today_for_api);
-					};
-				} else {
-					alert("Geocoder failed due to: "+status);
-				}
-			});
-		}
+		});
 	}
 	
 	function getPerformanceInfo(eventArray,callCount) {
@@ -350,11 +329,6 @@
 		//Display tags
 		tagHandler();
 		
-		//If search term, search first
-		if (document.getElementById("find_desc").value) {
-			searchResults();
-		};
-
 		//Display results
 		$("#boxPerformance2").append(activeArray.length+" killer event times for you!");
 		document.getElementById("eventCount").innerHTML = activeArray.length;
@@ -364,59 +338,6 @@
 		createPages(eventNum);
 	}
 
-	function searchResults() {
-		var searchArray = [];
-		var searchTerm = document.getElementById('find_desc').value;
-		var searchTermCap = searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1);
-		var termArray = [];
-		termArray.push(searchTermCap);
-		termArray.push(searchTerm.toUpperCase());
-		termArray.push(searchTerm.toLowerCase());
-		for (i in activeArray) {
-			var match = 0
-			for (h in termArray) {
-				//Search name
-				if(activeArray[i].name.search(termArray[h]) != -1) {
-					match = 1;
-				};
-				//Search organization
-				if(activeArray[i].organization.search(termArray[h]) != -1) {
-					match = 1;
-				};
-				//Search tags
-				for (k in activeArray[i].tags) {
-					if(activeArray[i].tags[k].search(termArray[h]) != -1) {
-						match = 1;
-					};
-				};
-				//Search description
-				if(activeArray[i].desc.search(termArray[h]) != -1) {
-					match = 1;
-				};
-
-				//Search venue
-				if(activeArray[i].venue.search(termArray[h]) != -1) {
-					match = 1;
-				};
-			};
-			if (match != 0) {
-				searchArray.push(activeArray[i]);
-			};
-		};
-		activeArray = searchArray;
-		document.getElementById("eventCount").innerHTML = activeArray.length;
-		document.getElementById("searchTerm").innerHTML = " for "+searchTerm+"<a href='#' onclick='removeTerm()'> [x]</a>";
-	}
-	
-	function removeTerm() {
-		activeArray = megaArrayDated;
-		document.getElementById("result_table").innerHTML = "";
-		document.getElementById("eventCount").innerHTML = activeArray.length;
-		document.getElementById("searchTerm").innerHTML = "";
-		displayPages(20,1);
-		createPages(20);
-	}
-	
 	function displayPages(numPerPage,pageNum) {
 		if (markersArray.length > 0){
 			deleteMarkers();
@@ -532,7 +453,6 @@
 	}
 	
 	function searchByTag(searchTag) {
-		document.getElementById("searchTerm").innerHTML = "";
 		specificResults = [];
 		for (i in megaArrayDated) {
 			for (h in megaArrayDated[i].tags) {
@@ -560,7 +480,7 @@
 	}
 	
 	function updateAddress() {
-		fetch(2);
+		fetch();
 	}
 	
 	function ClearCity() {
@@ -586,27 +506,6 @@
 	
 	$(document).ready(function() {
 		$(".fancy_title").lettering();
-		$("a#zippy").fancybox({
-			showCloseButton: false,
-			hideOnOverlayClick: false,
-			width: 325,
-			height: 50,
-			autoDimensions: false,
-		});
-		$("#zippy").trigger('click');
-		geocoder = new google.maps.Geocoder();
-		var myOptions = {
-			zoom: 12,
-			mapTypeId: google.maps.MapTypeId.ROADMAP
-		};
-		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-	});
-	
-	function locationChange() {
-		newLocation = 1;
-	}
-	
-	function firstInput() {
 		$("a#inline").fancybox({
 			showCloseButton: false,
 			width: 700,
@@ -615,8 +514,7 @@
 			hideOnOverlayClick: true,
 		});
 		$("#inline").trigger('click');
-		fetch(1);
-	}
+	});
 	
 	function activateLink(pageNum) {
 	  	aObj = document.getElementById('pNums').getElementsByTagName('a');
@@ -633,7 +531,7 @@
 	
 </script>
 </head>
-<body>
+<body onload="initialize()">
 <div id="header"> 
 	<div class="outsideContainer">
 		<h1 class="fancy_title"><a href="http://www.jennystanchak.com/tlsearch">Ticket Beacon</a></h1> 
@@ -653,16 +551,16 @@
 					</p> 
 					<p id="search_near" class="clearfix"> 
 						<label for="dropperText_Mast">Near City or Zip <span>(e.g. San Francisco, CA or 92130)</span></label> 
-						<input maxlength="64" name="find_loc" tabindex="2" id="find_loc" onchange="locationChange()" size="14" value="Philadelphia, PA"> 
+						<input maxlength="64" name="find_loc" tabindex="2" id="find_loc" size="14" value="Philadelphia, PA"> 
 					</p> 
-					<a class="button" style="position:absolute;top:28px;float:left; width:85px; text-align:center" onclick="this.blur(); fetch(2)"><span>Search</span></a>
+					<a class="button" style="position:absolute;top:28px;float:left; width:85px; text-align:center" onclick="this.blur(); fetch()"><span>Search</span></a>
 
 				</form>
 			</div><!--end searchbox-->
 			<div class="clear"></div>
 			
 			<div id="resultControls" style="display:none">
-				<div class="resultNum"><div id="eventCount">10,000,000</div> event times<div id="searchTerm"></div><div id="searchLocation"> in Philadelphia</div><div id="searchTag"></div></div>
+				<div class="resultNum"><div id="eventCount">10,000,000</div> event times<div id="searchTerm"> for taco</div><div id="searchLocation"> in Philadelphia</div><div id="searchTag"></div></div>
 				<hr style="color:#ccc;background-color:#ccc;height:1px;border:none;" />
 				<div class="pages"><span id="previous"></span><div class="pNums" id="pNums"><a>1</a> <a>2</a> <a>3</a> 4 5 6</div><span id="next"> <a href="#">next</a></span></div>				
 				<div class="sort">Sort: <span><a href="#">Date/Time</a> | <a href="#">Social Activity</a> | <a href="#">Distance</a></span></div>
@@ -671,15 +569,7 @@
 				<div class="clear"></div>
 			</div><!--end resultControls-->
 			
-			<!--beginning of lightbox1 controls-->
-			<a style="display:none" id="zippy" href="#zipInput">This shows the content of element who has id="zipInput"</a>
-			<div style="display:none"><div id="zipInput">
-				<label for="dropperText_Mast">Input City or Zip <span>(e.g. San Francisco, CA or 92130)</span></label> 
-				<input maxlength="64" name="first_loc" tabindex="2" id="first_loc" size="14" value="Philadelphia, PA" >
-				<a class="button" style="float:left; width:60px; text-align:center" onclick="this.blur(); firstInput()"><span>Search</span></a>
-				
-			</div></div><!--end of lightbox1 controls-->
-			<!--beginning of lightbox2 controls-->
+			<!--beginning of lightbox controls-->
 			<a style="display:none" id="inline" href="#lightData">This shows the content of element who has id="lightData"</a>
 			<div style="display:none"><div id="lightData">
 				<table>
@@ -697,7 +587,7 @@
 					</tr>
 				</table>
 				
-			</div></div><!--end of lightbox2 controls-->
+			</div></div><!--end of lightbox controls-->
 			
 		</div><!--end of parameters-->
 		<div class='results'>
