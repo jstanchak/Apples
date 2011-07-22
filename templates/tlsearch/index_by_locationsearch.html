@@ -77,6 +77,7 @@
 						map.setCenter(latlng);
 						masterLatlng = latlng;
 						var addy = results[0].formatted_address.split(", ");
+						alert(addy);
 						var state = addy[2].split(" ");
 						var COUNTRY_CODE = addy[3];
 						var REGION_NAME = state[0];
@@ -148,10 +149,10 @@
 						info.latlng = latlng;
 						info.distance = calcDistance(info.latlng,masterLatlng);
 					} else {
-						//alert('No results for '+info.location);
+						alert('No results for '+info.location);
 					}
 				} else {
-					//alert(status+this[1]);
+					alert(status+this[1]);
 				}
 			});
 			var tlUrl = 'http://public-api.ticketleap.com/organizations/'+this[0]+'/events/'+this[1];
@@ -210,7 +211,7 @@
 										getLocation(megaArray[i],1);
 										//getAttendees(megaArray[i]);
 									};
-									getAttendees();
+									showMe(20);
 								}
 							}
 						}
@@ -243,7 +244,7 @@
 						alert('No results for '+info.location);
 					}
 				} else {
-					//alert(status);
+					alert(status);
 				}
 			});
 		}
@@ -271,19 +272,18 @@
 		return d.toFixed(3);
 	}
 	
-	function getAttendees() {
-		for (i in megaArray) {
-			var tlUrl = 'http://public-api.ticketleap.com/organizations/'+megaArray[i].organization+'/events/'+megaArray[i].eventslug+'/social/attendees';
-			$.getJSON(tlUrl+'?key=5382714350143704&callback=?', {},
-				function(data) {
-					megaArray[i].attendees = data.total_count;
-					//alert	(megaArray[i].attendees+' attendees to '+megaArray[i].name);
-					attendeeCounter += 1;
-					//alert(attendeeCounter+' out of '+(megaArray.length - 1));
-			});
-		};
-		//alert('now it is time to move on');
-		showMe(20);
+	function getAttendees(info) {
+		var tlUrl = 'http://public-api.ticketleap.com/organizations/'+info.organization+'/events/'+info.eventslug+'/social/attendees';
+		$.getJSON(tlUrl+'?key=5382714350143704&callback=?', {},
+			function(data) {
+				info.attendees = data.total_count;
+				attendeeCounter += 1;
+				//alert(attendeeCounter+' out of '+(megaArray.length - 1));
+				//if performance is the last in the array, get distance
+				if (attendeeCounter == (megaArray.length - 1)) {
+					alert('halleluiah! find me some distance!');
+				}
+		});
 	}
 	
 	function showMe(eventNum) {
@@ -513,7 +513,7 @@
 
 	function getEventInfo(info) {
 			var elName = 'tl_'+info.perfslug;
-			//alert(info.distance);
+			alert(info.distance);
 			$('#'+elName).append('<td class="image" style="width:8em"><a target="_blank" href="'+info.url+'"> <img src='+info.image+' /></a></td>'
 				+'<td><h3><a target="_blank" href="'+info.url+'">'+info.name+'</a></h3>'
 				+'<table cellpadding="0" cellspacing="0"><tr class="meta">'
@@ -521,7 +521,7 @@
 				+'Organized by <a target="_blank" href="http://'+info.orgslug+'.ticketleap.com">'+info.organization+'</a><br />'
 				+'<div id="'+this.perfslug+'_peeps">Attendee info should go riiiiight here</div></td>'
 				+'<td><strong>'+info.venue+'</strong><br/>'+info.location+'</td></tr></table>'
-				+'<p id="desc">'+info.desc+' - '+info.distance+info.attendees+'</p></td></tr>');
+				+'<p id="desc">'+info.desc+' - '+info.distance+'</p></td></tr>');
 			
 	}
 
@@ -583,18 +583,18 @@
 							activeArray[i].latlng = latlng;
 							activeArray[i].distance = calcDistance(latlng,masterLatlng);
 						} else {
-							//alert('No results for '+info.location);
+							alert('No results for '+info.location);
 						}
 					} else {
-						//alert(status+'poop');
+						alert(status+'poop');
 					}
 				});
 				if (activeArray[i].latlng) {} else{
-					//alert(activeArray[i].name+' has no latlng at '+activeArray[i].location);
+					alert(activeArray[i].name+' has no latlng at '+activeArray[i].location);
 				}
 			}
 		};
-		//alert('we made it here');
+		alert('we made it here');
 		//Get rid of undefined
 		for (i in activeArray) {
 			if (activeArray[i].distance){
@@ -680,7 +680,7 @@
 		$("a#zippy").fancybox({
 			showCloseButton: false,
 			hideOnOverlayClick: false,
-			width: 425,
+			width: 325,
 			height: 50,
 			autoDimensions: false,
 		});
@@ -743,7 +743,7 @@
 						<input maxlength="64" name="find_desc" tabindex="1" size="20" id="find_desc" autocomplete="off" value=""> 
 					</p> 
 					<p id="search_near" class="clearfix"> 
-						<label for="dropperText_Mast">Near Address <span>(e.g. 60 Wall St, New York, NY)</span></label> 
+						<label for="dropperText_Mast">Near City or Zip <span>(e.g. San Francisco, CA or 92130)</span></label> 
 						<input maxlength="64" name="find_loc" tabindex="2" id="find_loc" onchange="locationChange()" size="14" value="Philadelphia, PA"> 
 					</p> 
 					<a class="button" style="position:absolute;top:28px;float:left; width:85px; text-align:center" onclick="this.blur(); fetch(2)"><span>Search</span></a>
@@ -765,8 +765,8 @@
 			<!--beginning of lightbox1 controls-->
 			<a style="display:none" id="zippy" href="#zipInput">This shows the content of element who has id="zipInput"</a>
 			<div style="display:none"><div id="zipInput">
-				<label for="dropperText_Mast">Enter your address <span>(e.g. 60 Wall Street, New York, NY)</span></label> 
-				<input maxlength="64" name="first_loc" tabindex="2" id="first_loc" size="26" value="1700 Sansom St., Philadelphia, PA" >
+				<label for="dropperText_Mast">Input City or Zip <span>(e.g. San Francisco, CA or 92130)</span></label> 
+				<input maxlength="64" name="first_loc" tabindex="2" id="first_loc" size="14" value="Philadelphia, PA" >
 				<a class="button" style="float:left; width:60px; text-align:center" onclick="this.blur(); firstInput()"><span>Search</span></a>
 				
 			</div></div><!--end of lightbox1 controls-->
