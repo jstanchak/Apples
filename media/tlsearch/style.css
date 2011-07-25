@@ -121,9 +121,20 @@ button{font-family:arial,'Lucida Grande','Bitstream Vera Sans',verdana,sans-seri
 #zipInput input{float:left;width:300px;}
 
 .resultNum {font-size:17px;margin-bottom:0px; font-weight:bold;}
+.narrowResults {float:right;display:inline-block;background: url('/media/tlsearch/images/arrows.png') no-repeat right -53px; padding-right:20px}
+.narrowResults a{color:#1d87b8;font-size:12px;font-style:normal;font-weight:normal;text-decoration:none;}
+.active{background-position: right 3px;}
 #searchTerm, #searchLocation, #eventCount, #searchTag{display:inline;}
 #searchTag a, #searchTerm a{color:#1d87b8;font-size:8px;position:relative;top:-7px;text-decoration:none;}
-.sort, .pagination, .pages{color:#1d87b8;display:block;font-weight:bold;margin-bottom:2px;font-size:12px;}
+#timePanel, .sort, .pagination, .pages{color:#1d87b8;display:block;font-weight:bold;margin-bottom:2px;font-size:12px;}
+.searchyBox{float:left;display:inline; width:438px;padding-top:5px}
+.searchyBox input{width:90px;height:14px;padding:3px 0 0px 5px;font-size:12px;color:#333;border:1px solid #ccc;background:url(//media3.px.yelpcdn.com/static/201012163545511154/i/gfx/header_sprite.png) no-repeat 0 -152px;}}
+.searchyBox input:active{border-color:#888;outline:0;}
+.searchyBox input{display:inline;width:90px;}
+.dateColumnA{float:left; display:inline; width:230px}
+.dateColumnB{float:left; display:inline}
+.dateColumnC{float:right; display:inline}
+.dateColumnA a, .dateColumnB a, .dateColumnC a{color:#666;font-size:12px;font-style:normal;font-weight:normal;text-decoration:none;}
 .sort span a, .pagination span a, .pages span a{color:#666;font-size:12px;font-style:normal;font-weight:normal;text-decoration:none;}
 .pages {float:right;display:inline;}
 .pagination{float:left; display:inline;}

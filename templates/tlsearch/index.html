@@ -8,7 +8,9 @@
 <script src="/media/jquery-1.4.4.min.js"></script>
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?libraries=geometry&sensor=false"></script>
 <script src="http://code.jquery.com/jquery-1.5.js"></script>
-<script type="text/javascript" src="/media/tlsearch/throbber.js"></script>
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+<link type="text/css" href="/media/tlsearch/jquery-ui/css/custom-theme/jquery-ui-1.8.14.custom.css" rel="Stylesheet" />
 <script src="/media/lettering.js"></script>
 <script type="text/javascript" src="/media/fancybox/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
 <script type="text/javascript" src="/media/fancybox/fancybox/jquery.easing-1.4.pack.js"></script>
@@ -691,7 +693,75 @@
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		};
 		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+		//Event time selector panel
+		$(".narrowResults").click(function(){
+			$("#timePanel").slideToggle("slow");
+			$(this).toggleClass("active"); return false;
+		});
+		//Datepicker
+		$("#event_start").datepicker({
+			showOtherMonths: true,
+			selectOtherMonths: true,
+			defaultDate: "",
+			dateFormat: 'mm-dd-yy',
+			minDate: today,
+			onSelect: function( selectedDate ) {
+				$("#event_end").datepicker("option", "minDate", selectedDate);
+			}
+		});
+		$("#event_end").datepicker({
+			showOtherMonths: true,
+			selectOtherMonths: true,
+			defaultDate: "",
+			minDate: today,
+			beforeShow: checkMinDate,
+			dateFormat: 'mm-dd-yy',
+		})
 	});
+	
+	function checkMinDate() {
+		var date1 = $("#event_start").datepicker("getDate");
+		$("#event_end").datepicker("option", "minDate", date1);
+	}
+	
+	function setToday() {
+		$("#event_start, #event_end").datepicker("setDate", today);
+	}
+	
+	function setTomorrow() {
+		$("#event_start, #event_end").datepicker("setDate", "+1d");
+	}
+	
+	function setThisWeek() {
+		$("#event_start").datepicker("setDate", today);
+		var weekday = today.getDay();
+		var daysToAdd = 7 - weekday;
+		$("#event_end").datepicker("setDate", "+"+daysToAdd+"d");
+	}
+	
+	function setThisWeekend() {
+		var weekday = today.getDay();
+		var daysToWeekend = 5 - weekday;
+		$("#event_start").datepicker("setDate", "+"+daysToWeekend+"d");
+		var daysToAdd = daysToWeekend + 2;
+		$("#event_end").datepicker("setDate", "+"+daysToAdd+"d");
+	}
+	
+	function setNextWeek() {
+		var weekday = today.getDay();
+		var daysToNextWeek = 8 - weekday;
+		$("#event_start").datepicker("setDate", "+"+daysToNextWeek+"d");
+		var daysToAdd = daysToNextWeek + 6
+		$("#event_end").datepicker("setDate", "+"+daysToAdd+"d");
+	}
+	
+	function setNextWeekend() {
+		var weekday = today.getDay();
+		var daysToWeekend = 12 - weekday;
+		$("#event_start").datepicker("setDate", "+"+daysToWeekend+"d");
+		var daysToAdd = daysToWeekend + 2;
+		$("#event_end").datepicker("setDate", "+"+daysToAdd+"d");
+	}
 	
 	function locationChange() {
 		newLocation = 1;
@@ -753,8 +823,31 @@
 			<div class="clear"></div>
 			
 			<div id="resultControls" style="display:none">
+				<div class="narrowResults"><a href="#" class="timeSlide">Narrow results by date     </a></div>
 				<div class="resultNum"><div id="eventCount">10,000,000</div> event times<div id="searchTerm"></div><div id="searchLocation"> in Philadelphia</div><div id="searchTag"></div></div>
 				<hr style="color:#ccc;background-color:#ccc;height:1px;border:none;" />
+				<div id="timePanel" style="display:none;">
+					<div class="searchyBox">
+						Return events between
+						<input maxlength="10" name="event_start" tabindex="1" size="10" id="event_start" autocomplete="off" value="">
+						and
+						<input maxlength="10" name="event_end" tabindex="1" size="10" id="event_end" autocomplete="off" value="">
+					</div>
+					<div class="dateColumnA">
+						<a href="#" onclick="setToday()">Today</a><br />
+						<a href="#" onclick="setTomorrow()">Tomorrow</a>
+					</div>
+					<div class="dateColumnB">
+						<a href="#" onclick="setThisWeek()">This week</a><br />
+						<a href="#" onclick="setThisWeekend()">This weekend</a>
+					</div>
+					<div class="dateColumnC">
+						<a href="#" onclick="setNextWeek()">New week</a><br />
+						<a href="#" onclick="setNextWeekend()">Next weekend</a>
+					</div>
+					<div class="clear"></div>
+					<hr style="color:#ccc;background-color:#ccc;height:1px;border:none;" />
+				</div>
 				<div class="pages"><span id="previous"></span><div class="pNums" id="pNums"><a>1</a> <a>2</a> <a>3</a> 4 5 6</div><span id="next"> <a href="#">next</a></span></div>				
 				<div class="sort">Sort: <span><a href="#" onclick="sortByDate()">Date/Time</a> | <a href="#" onclick="sortBySocial()">Social Activity</a> | <a href="#" onclick="sortByDistance()">Distance</a></span></div>
 				<div class="pagination">Show: <span><a href="#" onclick="resultSort(10)">10</a> | <a href="#" onclick="resultSort(20)">20</a> | <a href="#" onclick="resultSort(50)">50</a></span></div>
