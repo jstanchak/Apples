@@ -96,7 +96,7 @@ a.button:active span {
 }
 
 #nav {
-  background: #4DB8E0 url('/img/bg-nav-6cca6424a69c9e3e5bef34d300b05107.png') top left repeat-x;
+  background: #4DB8E0 top left repeat-x;
   border-bottom:1px solid #45A5C9;
   font-weight: bold;
   height:38px;
