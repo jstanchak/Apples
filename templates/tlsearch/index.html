@@ -523,7 +523,7 @@
 				+'Organized by <a target="_blank" href="http://'+info.orgslug+'.ticketleap.com">'+info.organization+'</a><br />'
 				+'<div id="'+this.perfslug+'_peeps">Attendee info should go riiiiight here</div></td>'
 				+'<td><strong>'+info.venue+'</strong><br/>'+info.location+'</td></tr></table>'
-				+'<p id="desc">'+info.desc+' - '+info.distance+info.attendees+'</p></td></tr>');
+				+'<p id="desc">'+info.desc+'</p></td></tr>');
 			
 	}
 
@@ -705,6 +705,7 @@
 			defaultDate: "",
 			dateFormat: 'mm-dd-yy',
 			minDate: today,
+			showAnim: "",
 			onSelect: function( selectedDate ) {
 				$("#event_end").datepicker("option", "minDate", selectedDate);
 			}
@@ -714,6 +715,7 @@
 			selectOtherMonths: true,
 			defaultDate: "",
 			minDate: today,
+			showAnim: "",
 			beforeShow: checkMinDate,
 			dateFormat: 'mm-dd-yy',
 		})
@@ -721,7 +723,9 @@
 	
 	function checkMinDate() {
 		var date1 = $("#event_start").datepicker("getDate");
-		$("#event_end").datepicker("option", "minDate", date1);
+		if (date1) {
+			$("#event_end").datepicker("option", "minDate", date1);
+		}
 	}
 	
 	function setToday() {
