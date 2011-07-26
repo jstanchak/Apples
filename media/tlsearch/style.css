@@ -77,6 +77,12 @@ a.button {
 	right:10px;
 }
 
+.searchyBox a.button {
+	position:absolute;
+	top:123px;
+	left:438px;
+}
+
 a.button span {
     background: transparent url('/media/tlsearch/images/bg_button_span.gif') no-repeat;
     display: block;
@@ -127,11 +133,11 @@ button{font-family:arial,'Lucida Grande','Bitstream Vera Sans',verdana,sans-seri
 #searchTerm, #searchLocation, #eventCount, #searchTag{display:inline;}
 #searchTag a, #searchTerm a{color:#1d87b8;font-size:8px;position:relative;top:-7px;text-decoration:none;}
 #timePanel, .sort, .pagination, .pages{color:#1d87b8;display:block;font-weight:bold;margin-bottom:2px;font-size:12px;}
-.searchyBox{float:left;display:inline; width:438px;padding-top:5px}
+.searchyBox{float:left;display:inline; width:668px;padding-top:5px}
 .searchyBox input{width:90px;height:14px;padding:3px 0 0px 5px;font-size:12px;color:#333;border:1px solid #ccc;background:url(//media3.px.yelpcdn.com/static/201012163545511154/i/gfx/header_sprite.png) no-repeat 0 -152px;}}
 .searchyBox input:active{border-color:#888;outline:0;}
 .searchyBox input{display:inline;width:90px;}
-.dateColumnA{float:left; display:inline; width:230px}
+.dateColumnA{float:left; display:inline; width:115px}
 .dateColumnB{float:left; display:inline}
 .dateColumnC{float:right; display:inline}
 .dateColumnA a, .dateColumnB a, .dateColumnC a{color:#666;font-size:12px;font-style:normal;font-weight:normal;text-decoration:none;}

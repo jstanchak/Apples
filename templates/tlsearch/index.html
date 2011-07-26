@@ -342,23 +342,23 @@
 		document.getElementById("tags").innerHTML = "";
 		//Determine tag size
 		if (uniques.length > 300) {
-			var freqLimit = 5;
-			var addNum = 4;
+			var freqLimit = 4;
+			var addNum = 6;
 			var multy = 3;
-			var divy = 5;
+			var divy = 8;
 		}
 		else {
 			if (uniques.length < 100) {
 				var freqLimit = 1;
-				var addNum = 5;
-				var multy = 4;
+				var addNum = 4;
+				var multy = 5;
 				var divy = 3;
 			} 
 			else {
-				var freqLimit = 3;
-				var addNum = 6;
+				var freqLimit = 2;
+				var addNum = 5;
 				var multy = 4;
-				var divy = 5;
+				var divy = 7;
 			}
 		};
 		
@@ -376,27 +376,28 @@
 		aObj = document.getElementById('tags').getElementsByTagName('a');
 		for(var i=0;i<aObj.length;i++) {
 			var searchTag = aObj[i].innerHTML;
-			var term = searchTag;
 	    	aObj[i].onclick = function(){
 				searchByTag(this.id);
 			};
 	  	}; 
 		
-		document.getElementsByClass = function(class){
+		function getElementsByClass(class){
 		   var itemsfound = new Array;
 		   var elements = document.getElementsByTagName('*');
 		   for(var i=0;i<elements.length;i++){
 		      if(elements[i].className == class){
 		         itemsfound.push(elements[i]);
 		      }
-		   }
+		   };
 		   return itemsfound;
 		};
+		
 		//change font-size for tag cloud
 		var fSize = 9;
 		while (fSize <= 27) {
-			for(i in document.getElementsByClass(fSize)) {
-				 document.getElementsByClass(fSize)[i].style.fontSize = fSize+'px';
+			sizedElements = getElementsByClass(fSize);
+			for(i in sizedElements) {
+				 sizedElements[i].style.fontSize = fSize+'px';
 			};
 			fSize += 1
 		};
@@ -728,7 +729,8 @@
 	}
 	
 	function setToday() {
-		$("#event_start, #event_end").datepicker("setDate", today);
+		$("#event_start").datepicker("setDate", today);
+		$("#event_end").datepicker("setDate", today);
 	}
 	
 	function setTomorrow() {
@@ -831,10 +833,11 @@
 				<hr style="color:#ccc;background-color:#ccc;height:1px;border:none;" />
 				<div id="timePanel" style="display:none;">
 					<div class="searchyBox">
-						Return events between
+						Filter events between
 						<input maxlength="10" name="event_start" tabindex="1" size="10" id="event_start" autocomplete="off" value="">
 						and
 						<input maxlength="10" name="event_end" tabindex="1" size="10" id="event_end" autocomplete="off" value="">
+						<a class="button" style="position:absolute;float:left; width:70px; text-align:center" onclick="this.blur(); fetch(2)"><span>Filter</span></a>
 					</div>
 					<div class="dateColumnA">
 						<a href="#" onclick="setToday()">Today</a><br />
@@ -845,7 +848,7 @@
 						<a href="#" onclick="setThisWeekend()">This weekend</a>
 					</div>
 					<div class="dateColumnC">
-						<a href="#" onclick="setNextWeek()">New week</a><br />
+						<a href="#" onclick="setNextWeek()">Next week</a><br />
 						<a href="#" onclick="setNextWeekend()">Next weekend</a>
 					</div>
 					<div class="clear"></div>
