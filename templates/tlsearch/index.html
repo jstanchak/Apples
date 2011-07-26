@@ -27,11 +27,17 @@
 	var markersArray = [];
 	var infowindow;
 	var tagArray = [];
-	var specificResults = [];
+	var tagResults = [];
+	var termResults = [];
 	var activeArray;
 	var newLocation = 0;
 	var masterLatlng = new google.maps.LatLng(40.748379, -73.98555999999996);
 	var attendeeCounter = 0;
+	var dateFilterStart = null;
+	var dateFilterEnd = null;
+	var searchTermToggle = 0;
+	var searchTagToggle = 0;
+	var dateSearchToggle = 0;
 	
 	function fetch(num) {
 		//Ready the loading box
@@ -40,19 +46,22 @@
 		document.getElementById("boxEvents2").innerHTML = "";
 		document.getElementById("boxPerformance1").innerHTML = "";
 		document.getElementById("boxPerformance2").innerHTML = "";
-		document.getElementById("searchTerm").innerHTML = "";
 		//if just searching, just search, then show events, if not, do the whole damn thing.
 		if (num == 2 && newLocation == 0) {
-			activeArray = megaArray;
-			searchResults();
 			document.getElementById("result_table").innerHTML = "";
-			document.getElementById("searchTag").innerHTML = "";
 			deleteMarkers();
 			displayPages(20,1);
 			createPages(20);
 		}
 		else if (newLocation == 1 || num == 1) {
+			//Reset all toggles
+			searchTermToggle = 0;
+			searchTagToggle = 0;
+			dateSearchToggle = 0;
 			newLocation = 0;
+			document.getElementById("searchTerm").innerHTML = "";
+			document.getElementById("searchTag").innerHTML = "";
+			document.getElementById("timeFilter").innerHTML = "";
 			document.getElementById("resultControls").style.display = "none";
 			document.getElementById("maps_tags").style.display = "none";
 			document.getElementById("map_canvas").style.display = "none";
@@ -404,56 +413,71 @@
 	}
 
 	function searchResults() {
-		var searchArray = [];
+		searchTermToggle = 1;
+		termResults = [];
 		var searchTerm = document.getElementById('find_desc').value;
 		var searchTermCap = searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1);
 		var termArray = [];
 		termArray.push(searchTermCap);
 		termArray.push(searchTerm.toUpperCase());
 		termArray.push(searchTerm.toLowerCase());
-		for (i in activeArray) {
+		for (i in megaArray) {
 			var match = 0
 			for (h in termArray) {
 				//Search name
-				if(activeArray[i].name.search(termArray[h]) != -1) {
+				if(megaArray[i].name.search(termArray[h]) != -1) {
 					match = 1;
 				};
 				//Search organization
-				if(activeArray[i].organization.search(termArray[h]) != -1) {
+				if(megaArray[i].organization.search(termArray[h]) != -1) {
 					match = 1;
 				};
 				//Search tags
-				for (k in activeArray[i].tags) {
-					if(activeArray[i].tags[k].search(termArray[h]) != -1) {
+				for (k in megaArray[i].tags) {
+					if(megaArray[i].tags[k].search(termArray[h]) != -1) {
 						match = 1;
 					};
 				};
 				//Search description
-				if(activeArray[i].desc.search(termArray[h]) != -1) {
+				if(megaArray[i].desc.search(termArray[h]) != -1) {
 					match = 1;
 				};
 
 				//Search venue
-				if(activeArray[i].venue.search(termArray[h]) != -1) {
+				if(megaArray[i].venue.search(termArray[h]) != -1) {
 					match = 1;
 				};
 			};
 			if (match != 0) {
-				searchArray.push(activeArray[i]);
+				termResults.push(megaArray[i]);
 			};
 		};
-		activeArray = searchArray;
-		document.getElementById("eventCount").innerHTML = activeArray.length;
 		if (searchTerm){
 			document.getElementById("searchTerm").innerHTML = " for "+searchTerm+"<a href='#' onclick='removeTerm()'> [x]</a>";
 		}
+
+		document.getElementById("find_desc").value = "";
+		document.getElementById("result_table").innerHTML = "";
+		deleteMarkers();
+
+		displayPages(20,1);
+		createPages(20);
 	}
 	
 	function removeTerm() {
-		activeArray = megaArray;
+		searchTermToggle = 0;
 		document.getElementById("result_table").innerHTML = "";
-		document.getElementById("eventCount").innerHTML = activeArray.length;
 		document.getElementById("searchTerm").innerHTML = "";
+		displayPages(20,1);
+		createPages(20);
+	}
+	
+	function removeDate() {
+		dateSearchToggle = 0;
+		document.getElementById("result_table").innerHTML = "";
+		document.getElementById("timeFilter").innerHTML = "";
+		dateFilterStart = null;
+		dateFilterEnd = null;
 		displayPages(20,1);
 		createPages(20);
 	}
@@ -462,7 +486,64 @@
 		if (markersArray.length > 0){
 			deleteMarkers();
 		};
-		var counter = 0;
+		
+		//if dates are involved, deal with them here
+		if (dateFilterStart != null || dateFilterEnd != null) {
+			dateSearchToggle = 1;
+		}
+		var dateArray = [];
+		//If fields empty, give variables values
+		if (dateFilterStart == null){dateFilterStart = today};
+		if (dateFilterEnd == null){dateFilterEnd = new Date(2050, 0, 1)};
+		var dateFilterEnd2 = new Date();
+		dateFilterEnd2.setDate(dateFilterEnd.getDate()+1);
+		//get all the events within the dates in the dateArray
+		for (i in activeArray) {
+			if (activeArray[i].compDate >= dateFilterStart && activeArray[i].compDate <= dateFilterEnd2){
+				dateArray.push(activeArray[i]);
+			}
+		};
+		if (dateSearchToggle == 1) {
+			document.getElementById("eventCount").innerHTML = activeArray.length;
+			document.getElementById("timeFilter").innerHTML = " between "+(dateFilterStart.getMonth()+1)+'/'+dateFilterStart.getDate()+'/'+dateFilterStart.getFullYear()+' and '+(dateFilterEnd.getMonth()+1)+'/'+dateFilterEnd.getDate()+'/'+dateFilterEnd.getFullYear()+"<a href='#' onclick='removeDate()'> [x]</a>";
+		}
+		//set datepicker and date variables back to null
+		$("#event_start").datepicker("setDate", null);
+		$("#event_end").datepicker("setDate", null);
+		dateFilterStart = null;
+		dateFilterEnd = null;
+		//Deal with term, tag and date toggles to create activeArray
+		activeArray = [];
+		for (i in megaArray) {
+			var addOrNot = 1;
+			//If in tags, vote to add, if not, vote to not. 
+			if (searchTagToggle == 1) {
+				var idx = tagResults.indexOf(megaArray[i]);
+				if (idx == -1) {
+					addOrNot = 0;
+				};
+			};
+			//If in term results, vote to add, if not, vote to not. 
+			if (searchTermToggle == 1) {
+				var idx = termResults.indexOf(megaArray[i]);
+				if (idx == -1) {
+					addOrNot = 0;
+				};
+			};
+			//If dates are pertinent, vote to add, if not, vote to not. 
+			if (dateSearchToggle == 1) {
+				var idx = dateArray.indexOf(megaArray[i]);
+				if (idx == -1) {
+					addOrNot = 0;
+				};
+			};
+			//if it passed all tests, add that thing!
+			if (addOrNot == 1) {
+				activeArray.push(megaArray[i]);
+			};
+		}
+		document.getElementById("eventCount").innerHTML = activeArray.length;
+		
 		var startNum = (pageNum - 1)*numPerPage;
 		var endNum = Math.min(startNum + numPerPage,activeArray.length);
 		for (var i=startNum;i<endNum;i++) {
@@ -477,7 +558,7 @@
 			draggable: false,
 		});
 		markersArray.push(hMarker);
-		
+
 	}
 
 	function createPages(numPerPage) {
@@ -623,18 +704,16 @@
 	}
 	
 	function searchByTag(searchTag) {
-		document.getElementById("searchTerm").innerHTML = "";
-		specificResults = [];
+		searchTagToggle = 1;
+		tagResults = [];
 		for (i in megaArray) {
 			for (h in megaArray[i].tags) {
 				if (searchTag == megaArray[i].tags[h]) {
-					specificResults.push(megaArray[i]);
+					tagResults.push(megaArray[i]);
 				};
 			};
 		};
-		activeArray = specificResults;
 		document.getElementById("result_table").innerHTML = "";
-		document.getElementById("eventCount").innerHTML = activeArray.length;
 		document.getElementById("searchTag").innerHTML = " with tag "+searchTag+"<a href='#' onclick='removeTag()'> [x]</a>";
 		deleteMarkers();
 		displayPages(20,1);
@@ -642,9 +721,8 @@
 	}
 	
 	function removeTag() {
-		activeArray = megaArray;
+		searchTagToggle = 0;
 		document.getElementById("result_table").innerHTML = "";
-		document.getElementById("eventCount").innerHTML = activeArray.length;
 		document.getElementById("searchTag").innerHTML = "";
 		displayPages(20,1);
 		createPages(20);
@@ -768,6 +846,12 @@
 		$("#event_end").datepicker("setDate", "+"+daysToAdd+"d");
 	}
 	
+	function filterByDate() {
+		dateFilterStart = $("#event_start").datepicker("getDate");
+		dateFilterEnd = $("#event_end").datepicker("getDate");
+		fetch(2);
+	}
+	
 	function locationChange() {
 		newLocation = 1;
 	}
@@ -796,6 +880,14 @@
 	  	}
 	}
 	
+	function searchHandler() {
+		if (newLocation == 1){
+			fetch(2);
+		} else {
+			searchResults();
+		}
+	}
+	
 	
 </script>
 </head>
@@ -821,7 +913,7 @@
 						<label for="dropperText_Mast">Near Address <span>(e.g. 60 Wall St, New York, NY)</span></label> 
 						<input maxlength="64" name="find_loc" tabindex="2" id="find_loc" onchange="locationChange()" size="14" value="Philadelphia, PA"> 
 					</p> 
-					<a class="button" style="position:absolute;top:28px;float:left; width:85px; text-align:center" onclick="this.blur(); fetch(2)"><span>Search</span></a>
+					<a class="button" style="position:absolute;top:28px;float:left; width:85px; text-align:center" onclick="this.blur(); searchHandler()"><span>Search</span></a>
 
 				</form>
 			</div><!--end searchbox-->
@@ -829,7 +921,7 @@
 			
 			<div id="resultControls" style="display:none">
 				<div class="narrowResults"><a href="#" class="timeSlide">Narrow results by date     </a></div>
-				<div class="resultNum"><div id="eventCount">10,000,000</div> event times<div id="searchTerm"></div><div id="searchLocation"> in Philadelphia</div><div id="searchTag"></div></div>
+				<div class="resultNum"><div id="eventCount">10,000,000</div> event times<div id="searchTerm"></div><div id="searchLocation"> in Philadelphia</div><div id="searchTag"></div><div id="timeFilter"></div></div>
 				<hr style="color:#ccc;background-color:#ccc;height:1px;border:none;" />
 				<div id="timePanel" style="display:none;">
 					<div class="searchyBox">
@@ -837,7 +929,7 @@
 						<input maxlength="10" name="event_start" tabindex="1" size="10" id="event_start" autocomplete="off" value="">
 						and
 						<input maxlength="10" name="event_end" tabindex="1" size="10" id="event_end" autocomplete="off" value="">
-						<a class="button" style="position:absolute;float:left; width:70px; text-align:center" onclick="this.blur(); fetch(2)"><span>Filter</span></a>
+						<a class="button" style="position:absolute;float:left; width:70px; text-align:center" onclick="this.blur(); filterByDate()"><span>Filter</span></a>
 					</div>
 					<div class="dateColumnA">
 						<a href="#" onclick="setToday()">Today</a><br />
