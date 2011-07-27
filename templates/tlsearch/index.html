@@ -38,6 +38,7 @@
 	var searchTermToggle = 0;
 	var searchTagToggle = 0;
 	var dateSearchToggle = 0;
+	var zipArray = [];
 	
 	function fetch(num) {
 		//Ready the loading box
@@ -148,22 +149,8 @@
 	function getPerformanceInfo(eventArray,callCount) {
 		var lastOne = eventArray[eventArray.length-1];
 		var lastSlug = lastOne[1];
+		//Get location information
 		$.each(eventArray, function() {
-			geocoder.geocode({'address': this[2]}, function(results, status) {
-				if (status== google.maps.GeocoderStatus.OK) {
-					if(results[0]) {
-						var lat = results[0].geometry.location.lat();
-						var lng = results[0].geometry.location.lng();
-						var latlng = new google.maps.LatLng(lat, lng);
-						info.latlng = latlng;
-						info.distance = calcDistance(info.latlng,masterLatlng);
-					} else {
-						//alert('No results for '+info.location);
-					}
-				} else {
-					//alert(status+this[1]);
-				}
-			});
 			var tlUrl = 'http://public-api.ticketleap.com/organizations/'+this[0]+'/events/'+this[1];
 			$.getJSON(tlUrl+'?key=5382714350143704&callback=?', {},
 				function(data) {
@@ -216,11 +203,8 @@
 							var lastPerf = data.performances[data.performances.length-1];
 							if (this.slug == lastPerf.slug) {
 								if (callCount == numcalls) {
-									for (i in megaArray) {
-										getLocation(megaArray[i],1);
-										//getAttendees(megaArray[i]);
-									};
-									getAttendees();
+									getLocation();
+									showMe(20);
 								}
 							}
 						}
@@ -229,38 +213,10 @@
 		})
 	}
 	
-	function getLocation(info,Fswitch) {
-		if (newLocation == 1) {Fswitch=0};
-		if (info.latlng) {
-			if (Fswitch == 0) {
-				addVMarker(info, info.latlng);
-			}
-		} else {
-
-			
-			geocoder.geocode({'address': info.location}, function(results, status) {
-				if (status== google.maps.GeocoderStatus.OK) {
-					if(results[0]) {
-						var lat = results[0].geometry.location.lat();
-						var lng = results[0].geometry.location.lng();
-						var latlng = new google.maps.LatLng(lat, lng);
-						info.latlng = latlng;
-						info.distance = calcDistance(latlng,masterLatlng);
-						if (Fswitch == 0) {
-							addVMarker(info, latlng);
-						}
-					} else {
-						alert('No results for '+info.location);
-					}
-				} else {
-					//alert(status);
-				}
-			});
-		}
+	function getLocation() {
+		alert('we went here');
+		$.get('http://rpc.geocoder.us/service/rest?address=1600+Pennsylvania+Ave,+Washington+DC&callback=?',{}, function(data){alert('Data has landed')});
 	}
-	
-	
-	
 	
 	function calcDistance(p1, p2) {
 		var R = 6371; // earth's mean radius in km
@@ -505,7 +461,7 @@
 		};
 		if (dateSearchToggle == 1) {
 			document.getElementById("eventCount").innerHTML = activeArray.length;
-			document.getElementById("timeFilter").innerHTML = "<span> dated: "+(dateFilterStart.getMonth()+1)+'/'+dateFilterStart.getDate()+'/'+dateFilterStart.getFullYear()+' and '+(dateFilterEnd.getMonth()+1)+'/'+dateFilterEnd.getDate()+'/'+dateFilterEnd.getFullYear()+"<a href='#' onclick='removeDate()'> x</a></span>";
+			document.getElementById("timeFilter").innerHTML = "<span> between: "+(dateFilterStart.getMonth()+1)+'/'+dateFilterStart.getDate()+'/'+dateFilterStart.getFullYear()+' and '+(dateFilterEnd.getMonth()+1)+'/'+dateFilterEnd.getDate()+'/'+dateFilterEnd.getFullYear()+"<a href='#' onclick='removeDate()'> x</a></span>";
 		}
 		//set datepicker and date variables back to null
 		$("#event_start").datepicker("setDate", null);
@@ -550,7 +506,6 @@
 			var elName = 'tl_'+activeArray[i].perfslug;
 			$("<tr>").attr("id",elName).appendTo("#result_table");
 			getEventInfo(activeArray[i]);
-			getLocation(activeArray[i],0);
 		};
 		hMarker = new google.maps.Marker({
 			position: masterLatlng,
