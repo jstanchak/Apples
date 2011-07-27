@@ -131,7 +131,26 @@ button{font-family:arial,'Lucida Grande','Bitstream Vera Sans',verdana,sans-seri
 .narrowResults a{color:#1d87b8;font-size:12px;font-style:normal;font-weight:normal;text-decoration:none;}
 .active{background-position: right 3px;}
 #searchTerm, #searchLocation, #eventCount, #searchTag, #timeFilter{display:inline;}
-#searchTag a, #searchTerm a, #timeFilter a{color:#1d87b8;font-size:8px;position:relative;top:-7px;text-decoration:none;}
+#searchTag span, #searchTerm span, #timeFilter span{
+	display:inline-block;
+	display:-moz-inline-stack; 
+	padding:2px 5px;
+	margin-left:5px;
+	font-size:12px;
+	font-weight:normal;
+	text-align:center;
+	background-color:#edfaff;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border: 1px solid #1d87b8;
+}
+#searchTag a, #searchTerm a, #timeFilter a{
+	color:#1d87b8;
+	text-decoration:none;
+	position:relative;
+	top:-1px;}
+	
 #timePanel, .sort, .pagination, .pages{color:#1d87b8;display:block;font-weight:bold;margin-bottom:2px;font-size:12px;}
 .searchyBox{float:left;display:inline; width:668px;padding-top:5px}
 .searchyBox input{width:90px;height:14px;padding:3px 0 0px 5px;font-size:12px;color:#333;border:1px solid #ccc;background:url(//media3.px.yelpcdn.com/static/201012163545511154/i/gfx/header_sprite.png) no-repeat 0 -152px;}}

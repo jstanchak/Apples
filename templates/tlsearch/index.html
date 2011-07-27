@@ -453,7 +453,7 @@
 			};
 		};
 		if (searchTerm){
-			document.getElementById("searchTerm").innerHTML = " for "+searchTerm+"<a href='#' onclick='removeTerm()'> [x]</a>";
+			document.getElementById("searchTerm").innerHTML = "<span> containing: "+searchTerm+"<a href='#' onclick='removeTerm()'> x</a></span>";
 		}
 
 		document.getElementById("find_desc").value = "";
@@ -505,7 +505,7 @@
 		};
 		if (dateSearchToggle == 1) {
 			document.getElementById("eventCount").innerHTML = activeArray.length;
-			document.getElementById("timeFilter").innerHTML = " between "+(dateFilterStart.getMonth()+1)+'/'+dateFilterStart.getDate()+'/'+dateFilterStart.getFullYear()+' and '+(dateFilterEnd.getMonth()+1)+'/'+dateFilterEnd.getDate()+'/'+dateFilterEnd.getFullYear()+"<a href='#' onclick='removeDate()'> [x]</a>";
+			document.getElementById("timeFilter").innerHTML = "<span> dated: "+(dateFilterStart.getMonth()+1)+'/'+dateFilterStart.getDate()+'/'+dateFilterStart.getFullYear()+' and '+(dateFilterEnd.getMonth()+1)+'/'+dateFilterEnd.getDate()+'/'+dateFilterEnd.getFullYear()+"<a href='#' onclick='removeDate()'> x</a></span>";
 		}
 		//set datepicker and date variables back to null
 		$("#event_start").datepicker("setDate", null);
@@ -714,7 +714,7 @@
 			};
 		};
 		document.getElementById("result_table").innerHTML = "";
-		document.getElementById("searchTag").innerHTML = " with tag "+searchTag+"<a href='#' onclick='removeTag()'> [x]</a>";
+		document.getElementById("searchTag").innerHTML = "<span> tagged: "+searchTag+"<a href='#' onclick='removeTag()'> x</a></span>";
 		deleteMarkers();
 		displayPages(20,1);
 		createPages(20);
@@ -773,7 +773,7 @@
 		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
 		//Event time selector panel
 		$(".narrowResults").click(function(){
-			$("#timePanel").slideToggle("slow");
+			$("#timePanel").slideToggle("fast");
 			$(this).toggleClass("active"); return false;
 		});
 		//Datepicker
@@ -921,7 +921,7 @@
 			
 			<div id="resultControls" style="display:none">
 				<div class="narrowResults"><a href="#" class="timeSlide">Narrow results by date     </a></div>
-				<div class="resultNum"><div id="eventCount">10,000,000</div> event times<div id="searchTerm"></div><div id="searchLocation"> in Philadelphia</div><div id="searchTag"></div><div id="timeFilter"></div></div>
+				<div class="resultNum"><div id="eventCount">10,000,000</div> event times found<div id="searchLocation"> in Philadelphia</div><div id="searchTerm"></div><div id="searchTag"></div><div id="timeFilter"></div></div>
 				<hr style="color:#ccc;background-color:#ccc;height:1px;border:none;" />
 				<div id="timePanel" style="display:none;">
 					<div class="searchyBox">
