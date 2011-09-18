@@ -8,6 +8,7 @@ urlpatterns = patterns('',
     (r'^playlists/', include('playlists.urls')),
 	(r'^map/', include('map.urls')),
 	(r'^tlsearch/', include('tlsearch.urls')),
+	(r'^musicsearch/', include('musicsearch.urls')),
     (r'^$', 'apples.map.views.fsq_places'),
     
 

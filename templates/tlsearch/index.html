@@ -214,8 +214,8 @@
 	}
 	
 	function getLocation() {
-		alert('we went here');
-		$.get('http://rpc.geocoder.us/service/rest?address=1600+Pennsylvania+Ave,+Washington+DC&callback=?',{}, function(data){alert('Data has landed')});
+		var url1 = 'https://webgis.usc.edu/Services/Geocode/WebService/GeocoderWebServiceHttpNonParsed_V02_95.aspx?streetAddress=9355%20Burton%20Way&city=Beverly%20Hills&state=ca&zip=90210&apikey=9721e8651cf14944bef7311b957cfbff&format=csv&census=true&notStore=false&version=2.95';
+		$.ajax({url: url1, success: function(data){alert(data)}, dataType: 'text', type: 'GET'});
 	}
 	
 	function calcDistance(p1, p2) {
@@ -270,6 +270,9 @@
 
 		//Display results
 		$("#boxPerformance2").append(activeArray.length+" killer event times for you!");
+		document.getElementById("closeButton").style.display = "";
+		//Get close button on fancybox
+		//$(#inline).showCloseButton = true;
 		document.getElementById("eventCount").innerHTML = activeArray.length;
 		document.getElementById("resultControls").style.display = "";
 		document.getElementById("maps_tags").style.display = "";
@@ -814,10 +817,10 @@
 	function firstInput() {
 		$("a#inline").fancybox({
 			showCloseButton: false,
+			hideOnOverlayClick: false,
 			width: 700,
-			height: 245,
+			height: 270,
 			autoDimensions: false,
-			hideOnOverlayClick: true,
 		});
 		$("#inline").trigger('click');
 		fetch(1);
@@ -841,6 +844,10 @@
 		} else {
 			searchResults();
 		}
+	}
+	
+	function closeBox() {
+		$.fancybox.close();
 	}
 	
 	
@@ -873,7 +880,7 @@
 				</form>
 			</div><!--end searchbox-->
 			<div class="clear"></div>
-			
+			<div id="poop"></div>
 			<div id="resultControls" style="display:none">
 				<div class="narrowResults"><a href="#" class="timeSlide">Narrow results by date     </a></div>
 				<div class="resultNum"><div id="eventCount">10,000,000</div> event times found<div id="searchLocation"> in Philadelphia</div><div id="searchTerm"></div><div id="searchTag"></div><div id="timeFilter"></div></div>
@@ -884,7 +891,7 @@
 						<input maxlength="10" name="event_start" tabindex="1" size="10" id="event_start" autocomplete="off" value="">
 						and
 						<input maxlength="10" name="event_end" tabindex="1" size="10" id="event_end" autocomplete="off" value="">
-						<a class="button" style="position:absolute;float:left; width:70px; text-align:center" onclick="this.blur(); filterByDate()"><span>Filter</span></a>
+						<a href="#" class="button" style="position:absolute;float:left; width:70px; text-align:center" onclick="this.blur(); filterByDate()"><span>Filter</span></a>
 					</div>
 					<div class="dateColumnA">
 						<a href="#" onclick="setToday()">Today</a><br />
@@ -913,7 +920,7 @@
 			<div style="display:none"><div id="zipInput">
 				<label for="dropperText_Mast">Enter your address <span>(e.g. 60 Wall Street, New York, NY)</span></label> 
 				<input maxlength="64" name="first_loc" tabindex="2" id="first_loc" size="26" value="1700 Sansom St., Philadelphia, PA" >
-				<a class="button" style="float:left; width:60px; text-align:center" onclick="this.blur(); firstInput()"><span>Search</span></a>
+				<a href="#" class="button" style="float:left; width:60px; text-align:center" onclick="this.blur(); firstInput()"><span>Search</span></a>
 				
 			</div></div><!--end of lightbox1 controls-->
 			<!--beginning of lightbox2 controls-->
@@ -933,7 +940,7 @@
 						<td id="boxPerformance2"></td>
 					</tr>
 				</table>
-				
+			<a href="#" class="button" id="closeButton" style="display:none;position:absolute;top:240px;right:250px;width:180px; text-align:center" onclick="this.blur(); closeBox()"><span>Show me what you got!</span></a>
 			</div></div><!--end of lightbox2 controls-->
 			
 		</div><!--end of parameters-->
@@ -947,6 +954,7 @@
 			</div><!--end tags-->
 		</div><!--end maps_tags-->   
 		<div id='map_canvas'>
+			
 		</div><!--end map_canvas-->  
 	</div><!--end of outsideContainer-->
 </div><!--end page-->

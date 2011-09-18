@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<head>
+	<title>Music Search Hack</title>
+	<link rel="stylesheet" type="text/css" href="/media/musicsearch/style.css" />
+<link href="/media/favicon.ico" rel="icon" type="image/x-icon" />
+<script src="/media/jquery-1.4.4.min.js"></script>
+<script type="text/javascript" src="/media/musicsearch/main.js"></script>
+</head>
+
+<body style="margin:0; padding=0">
+<div style="line-height:2">
+</div>
+<div id="headerWrapper" style="background-color:#4D4D4D; margin:auto; margin-top:15px; text-align:center; line-height: 3; height:200px">
+
+
+<div id="searchbar" style="padding-top:25px">
+<input type="text" placeholder="Enter in an artist" id="artist_search" onClick="clearBox();" size="60" style="font-size:26px; text-align:center; border:1px solid #97b5d2; padding:7px;">
+<br />
+<input type="button" value="Search" onClick="pullJSON();" style="font-size:30px; height:100px">
+
+</div>
+
+<audio id="audio_player" controls="controls" height="50px" width="100px" style="margin-top:20px"  onsuspend="testing123();">
+	<embed height="50px" width="100px" />
+</audio>
+
+<div id="response_goes_here" style="font-size:40px">
+	   .
+</div>
+<div id="credits" style="color:#4D4D4D">
+	Created in two hours during our StancHACKathon!!
+</div>
+
+</div>
+
+<div style="height:20px">
+</div>
+
+
+</body>
