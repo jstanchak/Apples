@@ -16,7 +16,6 @@ function pullJSON() {
 		function(data) {
 			totalSongs = Math.min(data["response"]["total"], numResults);
 			var songPick = Math.floor(Math.random()*(totalSongs));
-			alert(songPick);
 			var mUrl = data["response"]["audio"][songPick]["url"];
 
 			var info = data["response"]["audio"][songPick]["artist"]+" - "+data["response"]["audio"][songPick]["title"];
