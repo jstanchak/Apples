@@ -11,7 +11,6 @@ function clearBox() {
 
 function incrementSongsPlayed() {
 	numSongsPlayed ++;
-	alert(numSongsPlayed);
 }
 
 function pullMP3(pickplay) {
