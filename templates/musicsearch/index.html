@@ -7,26 +7,39 @@
 <script type="text/javascript" src="/media/musicsearch/main.js"></script>
 </head>
 
-<body style="margin:0; padding=0">
+<body style="margin:0; padding=0; font-family:Verdana">
 <div style="line-height:2">
 </div>
-<div id="headerWrapper" style="background-color:#4D4D4D; margin:auto; margin-top:15px; text-align:center; line-height: 3; height:200px">
 
+<div id="headerWrapper" style="background-color:#4D4D4D; margin:auto; margin-top:15px; text-align:center; line-height: 1.25; height:240px">
 
-<div id="searchbar" style="padding-top:25px">
-<input type="text" placeholder="Enter in an artist" id="artist_search" onClick="clearBox();" size="60" style="font-size:26px; text-align:center; border:1px solid #97b5d2; padding:7px;">
+<div id="searchbar" style="padding-top:25px; color:white">
+<input type="text" placeholder="Enter in an artist" id="artist_search" onClick="clearBox();" size="60" style="font-size:26px; text-align:center; border:1px solid #97b5d2; padding:7px; font-family:Verdana">
 <br />
-<input type="button" value="Search" onClick="pullJSON();" style="font-size:30px; height:100px">
+<br />
+<input type="checkbox" checked="True" id="cycle_checkbox"> Switch to related artist every three songs?
+<br />
+<br />
+<input type="button" value="Search" onClick="pullMP3(0);" style="font-size:30px; height:100px">
 
 </div>
 
-<audio id="audio_player" controls="controls" height="50px" width="100px" style="margin-top:20px"  onerror="pullJSON();">
+<audio id="audio_player" controls="controls" preload="auto" height="50px" width="100px" style="margin-top:20px" onerror="pullMP3(1);" onended="pullMP3(2);incrementSongsPlayed()">
 	<embed height="50px" width="100px" />
 </audio>
+<br />
+<br />
 
-<div id="response_goes_here" style="font-size:40px">
-	   .
+<div id="song_info_goes_here" style="font-size:40px; display:hidden; color:white; height:150px; margin-top:30px">
+	<div id="current_artist"></div>
+	<div id="current_song"></div>
 </div>
+
+<div id="upNext" style="font-size:40px; display:none; color:white">
+	
+</div>
+
+
 <div id="credits" style="color:#4D4D4D">
 	Created in two hours during our StancHACKathon!!
 </div>
